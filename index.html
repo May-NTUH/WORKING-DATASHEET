@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>影像實驗室服務紀錄系統</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script>
+// 請在此填入您的 Google Apps Script 部署 URL
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzsVxSyfO0MeUK4x3UugrUjwoaHxVW7JdR-mAbVUmyXxVOxm09nT3QnmOxdiZ-Fljqi/exec";
+
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        morandi: {
+          bg: '#F4F3F0',
+          sidebar: '#6E7D7A',
+          sidebarHover: '#5B6966',
+          active: '#546360',
+          accent: '#9C9490',
+          accentLight: '#E8E5E2',
+          text: '#374151',
+          border: '#E2DFDB',
+          tf: '#8F8681',
+          axio: '#7A8684',
+          lsm: '#62706E'
+        }
+      },
+      fontFamily: { sans: ['"Noto Sans TC"', 'sans-serif'] }
+    }
+  }
+}
+</script>
+
+<style>
+  body { font-family: 'Noto Sans TC', sans-serif; background-color: #F4F3F0; color: #374151; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  input[type="text"], input[type="number"], input[type="date"], select, textarea {
+    width: 100%; padding: 0.6rem 0.85rem; border: 1px solid #D8D5D0;
+    border-radius: 0.6rem; background-color: #FAFAF9;
+    transition: all 0.2s; font-size: 0.9rem; color: #374151;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #6E7D7A; background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(110, 125, 122, 0.15);
+  }
+  .form-section {
+    background: white; padding: 1.75rem; border-radius: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02);
+    margin-bottom: 1.5rem; border-left: 5px solid #9C9490;
+  }
+  .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: #4B5563; margin-bottom: 0.4rem; }
+
+  .nav-btn {
+    width: 100%; text-align: left; padding: 0.65rem 0.9rem; border-radius: 0.65rem;
+    transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.82rem; font-weight: 500; color: rgba(255,255,255,0.85);
+    cursor: pointer; border: none; background: transparent;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.12); color: #FFF; }
+  .nav-btn.nav-active { background: #546360; color: #FFF; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+
+  .checkbox-pill { display: inline-flex; align-items: center; cursor: pointer; }
+  .checkbox-pill input[type="checkbox"], .checkbox-pill input[type="radio"] { display: none; }
+  .checkbox-pill span {
+    padding: 0.35rem 0.8rem; border-radius: 9999px; border: 1px solid #D1D5DB;
+    font-size: 0.8rem; font-weight: 500; color: #4B5563; background: #FAFAFA;
+    transition: all 0.18s; user-select: none;
+  }
+  .checkbox-pill input:checked + span {
+    background: #6E7D7A; color: #FFF; border-color: #6E7D7A; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .checkbox-pill:hover span { border-color: #6E7D7A; color: #6E7D7A; }
+  .checkbox-pill input:checked + span:hover { background: #5B6966; color: #FFF; }
+  
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #F1EFEA; }
+  ::-webkit-scrollbar-thumb { background: #C4C0B9; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9C9490; }
+</style>
+</head>
+
+<body class="flex flex-col md:flex-row min-h-screen">
+
+<!-- ===== 側邊導覽列 ===== -->
+<nav class="w-full md:w-64 bg-morandi-sidebar text-white flex flex-col shadow-xl z-20 flex-shrink-0">
+  <div class="p-6 border-b border-white/10 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl flex-shrink-0">
+      <i class="fas fa-microscope text-white"></i>
+    </div>
+    <div>
+      <h1 class="text-base font-bold tracking-wider leading-tight">影像實驗室</h1>
+      <span class="text-xs text-white/70">服務紀錄與統計系統</span>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-3 space-y-4">
+    <!-- TissueFAXS -->
+    <div>
+      <div class="text-[11px] font-bold tracking-wider text-white/50 px-3 mb-1 uppercase">全景組織細胞 (TissueFAXS)</div>
+      <button class="nav-btn nav-active" id="nav-tf-form" onclick="switchView('tf','form')">
+        <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
+      </button>
+      <button class="nav-btn" id="nav-tf-dash" onclick="switchView('tf','dash')">
+        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+      </button>
+    </div>
+
+    <!-- Axio Observer 7 -->
+    <div>
+      <div class="text-[11px] font-bold tracking-wider text-white/50 px-3 mb-1 uppercase">電動倒立螢光 (Axio Observer 7)</div>
+      <button class="nav-btn" id="nav-axio-form" onclick="switchView('axio','form')">
+        <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
+      </button>
+      <button class="nav-btn" id="nav-axio-dash" onclick="switchView('axio','dash')">
+        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+      </button>
+    </div>
+
+    <!-- LSM 880 -->
+    <div>
+      <div class="text-[11px] font-bold tracking-wider text-white/50 px-3 mb-1 uppercase">倒立共軛焦 (ZEISS LSM880)</div>
+      <button class="nav-btn" id="nav-lsm-form" onclick="switchView('lsm','form')">
+        <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
+      </button>
+      <button class="nav-btn" id="nav-lsm-dash" onclick="switchView('lsm','dash')">
+        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+      </button>
+    </div>
+  </div>
+
+  <!-- 資料即時同步狀態 -->
+  <div class="p-3 border-t border-white/10">
+    <button onclick="fetchAllData(true)" class="w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
+      <i id="sync-icon" class="fas fa-arrows-rotate"></i> 重新載入 / 同步試算表
+    </button>
+    <div id="sync-time" class="text-[10px] text-white/40 text-center mt-1.5">尚未載入資料</div>
+  </div>
+</nav>
+
+<!-- ===== 主要操作區域 ===== -->
+<main class="flex-1 overflow-y-auto p-4 md:p-8 w-full min-w-0">
+<div class="max-w-4xl mx-auto">
+
+  <!-- ================================================================= -->
+  <!-- 1. TissueFAXS: 新增紀錄                                            -->
+  <!-- ================================================================= -->
+  <div id="view-tf-form" class="tab-content active">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-morandi-tf/15 flex items-center justify-center text-morandi-tf font-bold">
+        <i class="fas fa-plus"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">新增服務紀錄</h2>
+        <p class="text-xs text-gray-400">全景組織細胞分析儀 (TissueGnostics TissueFAXS)</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleFormSubmit(event, 'TissueFAXS')">
+      <div class="form-section" style="border-left-color: #8F8681;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-id-card text-morandi-tf"></i> 客戶基本資料
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="tf-date" required></div>
+          <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="tf-unit" placeholder="例: 生科系 / 榮總" required></div>
+          <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="tf-pi" placeholder="例: 王教授" required></div>
+          <div><label class="form-label">服務使用人 <span class="text-red-500">*</span></label><input type="text" id="tf-user" placeholder="例: 陳同學" required></div>
+          <div class="md:col-span-2"><label class="form-label">資料夾名稱</label><input type="text" id="tf-folder" placeholder="例: 20260301_WangLab_Brain"></div>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #8F8681;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-vial text-morandi-tf"></i> 樣本與影像資訊
+        </h3>
+
+        <div class="mb-4">
+          <label class="form-label">影像類型</label>
+          <div class="flex gap-3">
+            <label class="checkbox-pill"><input type="radio" name="tf-imageType" value="螢光" checked onchange="toggleTfImageType('螢光')"><span><i class="fas fa-sun mr-1 text-xs"></i> 螢光</span></label>
+            <label class="checkbox-pill"><input type="radio" name="tf-imageType" value="可見光" onchange="toggleTfImageType('可見光')"><span><i class="fas fa-lightbulb mr-1 text-xs"></i> 可見光</span></label>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">物鏡倍率 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="10x"><span>10x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="20x"><span>20x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="40x"><span>40x</span></label>
+          </div>
+        </div>
+
+        <div id="tf-wavelength-container" class="mb-4">
+          <label class="form-label">光源波長 (螢光專用，可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mDAPI"><span>mDAPI</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mFITC"><span>mFITC</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mTEXA"><span>mTEXA</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="sDAPI"><span>sDAPI</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="sGFP"><span>sGFP</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="sRho"><span>sRho</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="sCy5"><span>sCy5</span></label>
+          </div>
+        </div>
+
+        <!-- 獨立通道動態設定區 (最多 4 通道) -->
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">獨立螢光通道參數 (會拆分寫入獨立欄位，最多 4 組)</label>
+          </div>
+          
+          <div id="tf-fl-params-block">
+            <div id="tf-channels-list" class="space-y-2"></div>
+            <button type="button" onclick="addFluoChannel('tf')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
+              <i class="fas fa-plus mr-1"></i> 新增螢光通道 (Channel)
+            </button>
+          </div>
+
+          <!-- 可見光專用條件 -->
+          <div id="tf-bf-params-block" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div><label class="form-label text-xs">Condensor 數值</label><input type="text" id="tf-bf-cond" placeholder="例: 0.55"></div>
+            <div><label class="form-label text-xs">燈源亮度 (%)</label><input type="text" id="tf-bf-light" placeholder="例: 80%"></div>
+            <div><label class="form-label text-xs">曝光時間 (ms)</label><input type="text" id="tf-bf-exp" placeholder="例: 15ms"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div><label class="form-label">樣本片數 (玻片數)</label><input type="number" id="tf-slides" value="1" min="0" required></div>
+          <div><label class="form-label">染色樣態備註</label><input type="text" id="tf-staining" placeholder="例: IHC DAB / H&E / IF 3色"></div>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #8F8681;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-clock text-morandi-tf"></i> 服務時數與狀態
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div><label class="form-label">收費時數 (小時)</label><input type="number" step="0.5" id="tf-charged" value="0" min="0"></div>
+          <div><label class="form-label">非收費時數 (小時)</label><input type="number" step="0.5" id="tf-nonCharged" value="0" min="0"></div>
+          <div><label class="form-label">服務人次</label><input type="number" id="tf-count" value="1" min="1"></div>
+        </div>
+        <div class="space-y-4">
+          <div><label class="form-label">服務狀況</label><input type="text" id="tf-status" placeholder="例: 正常執行完畢"></div>
+          <div><label class="form-label">其他備註</label><textarea id="tf-notes" rows="2" placeholder="自由填寫..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mb-10">
+        <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
+        <button type="submit" class="px-6 py-2 rounded-xl bg-morandi-tf hover:opacity-90 text-white font-bold transition shadow-md flex items-center gap-2">
+          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- 2. Axio Observer 7: 新增紀錄                                      -->
+  <!-- ================================================================= -->
+  <div id="view-axio-form" class="tab-content">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-morandi-axio/15 flex items-center justify-center text-morandi-axio font-bold">
+        <i class="fas fa-plus"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">新增服務紀錄</h2>
+        <p class="text-xs text-gray-400">電動倒立螢光顯微鏡 (ZEISS Axio Observer 7)</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleFormSubmit(event, 'AxioObserver')">
+      <div class="form-section" style="border-left-color: #7A8684;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-id-card" style="color:#7A8684"></i> 客戶基本資料
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="axio-date" required></div>
+          <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="axio-unit" placeholder="例: 醫學研究部" required></div>
+          <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="axio-pi" placeholder="例: 李教授" required></div>
+          <div><label class="form-label">服務使用人 <span class="text-red-500">*</span></label><input type="text" id="axio-user" placeholder="例: 林博士" required></div>
+          <div class="md:col-span-2"><label class="form-label">資料夾名稱</label><input type="text" id="axio-folder" placeholder="例: 20260301_LeeLab_LiveCell"></div>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #7A8684;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-vial" style="color:#7A8684"></i> 樣本與影像資訊
+        </h3>
+
+        <div class="mb-4">
+          <label class="form-label">影像類型 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="一般拍照"><span>一般拍照</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="曠時攝影"><span>曠時攝影</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="大圖拼接"><span>大圖拼接</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="Z軸"><span>Z軸</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="環境控制"><span>環境控制</span></label>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded-lg text-xs">
+            <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="axio-timelapse" placeholder="例: 12hr / 每15分"></div>
+            <div><label class="form-label text-[11px]">Z軸 (層數/步距)</label><input type="text" id="axio-zstack" placeholder="例: 20層 / 1μm"></div>
+            <div><label class="form-label text-[11px]">環境控制 (溫度/加濕)</label><input type="text" id="axio-env" placeholder="例: 37°C / 有加濕"></div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">物鏡倍率 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="10x"><span>10x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="20x"><span>20x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="40x"><span>40x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="20x玻"><span>20x玻</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="40x玻"><span>40x玻</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="63x油"><span>63x油</span></label>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">光源波長 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH1"><span>PH1</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH2"><span>PH2</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="DIC"><span>DIC</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="DAPI"><span>DAPI</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="FITC"><span>FITC</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="DsRED"><span>DsRED</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="A594"><span>A594</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="Cy5"><span>Cy5</span></label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="form-label">樣本載體</label><input type="text" id="axio-carrier" placeholder="例: SLIDE / 6-well plate"></div>
+          <div><label class="form-label">樣本內容</label><input type="text" id="axio-content" placeholder="例: CELL (HEK293) / TISSUE"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="form-label">樣本數 (片數/盤數)</label><input type="number" id="axio-slides" value="1" min="0" required></div>
+          <div><label class="form-label">拍照位點數</label><input type="number" id="axio-positions" value="1" min="0"></div>
+        </div>
+
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2">獨立波長通道參數 (將獨立拆分寫入 Channel 1~4 欄位)</label>
+          <div id="axio-channels-list" class="space-y-2"></div>
+          <button type="button" onclick="addFluoChannel('axio')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
+            <i class="fas fa-plus mr-1"></i> 新增波長通道 (Channel)
+          </button>
+        </div>
+
+        <div><label class="form-label">對焦策略</label><input type="text" id="axio-focus" placeholder="例: Definite Focus 自動對焦"></div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #7A8684;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-clock" style="color:#7A8684"></i> 服務時數與狀態
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div><label class="form-label">收費時數 (小時)</label><input type="number" step="0.5" id="axio-charged" value="0" min="0"></div>
+          <div><label class="form-label">非收費時數 (小時)</label><input type="number" step="0.5" id="axio-nonCharged" value="0" min="0"></div>
+          <div><label class="form-label">服務人次</label><input type="number" id="axio-count" value="1" min="1"></div>
+        </div>
+        <div class="space-y-4">
+          <div><label class="form-label">服務狀況</label><input type="text" id="axio-status" placeholder="例: 正常運作"></div>
+          <div><label class="form-label">其他備註</label><textarea id="axio-notes" rows="2" placeholder="自由填寫..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mb-10">
+        <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
+        <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#7A8684">
+          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- 3. LSM 880: 新增紀錄                                              -->
+  <!-- ================================================================= -->
+  <div id="view-lsm-form" class="tab-content">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-morandi-lsm/15 flex items-center justify-center text-morandi-lsm font-bold">
+        <i class="fas fa-plus"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">新增服務紀錄</h2>
+        <p class="text-xs text-gray-400">倒立式共軛焦顯微鏡 (ZEISS LSM 880)</p>
+      </div>
+    </div>
+
+    <form onsubmit="handleFormSubmit(event, 'LSM880')">
+      <div class="form-section" style="border-left-color: #62706E;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-id-card" style="color:#62706E"></i> 客戶基本資料
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="lsm-date" required></div>
+          <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="lsm-unit" placeholder="例: 藥學系" required></div>
+          <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="lsm-pi" placeholder="例: 張教授" required></div>
+          <div><label class="form-label">服務使用人 <span class="text-red-500">*</span></label><input type="text" id="lsm-user" placeholder="例: 趙同學" required></div>
+          <div class="md:col-span-2"><label class="form-label">資料夾名稱</label><input type="text" id="lsm-folder" placeholder="例: 20260301_Zhang_ZStack"></div>
+        </div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #62706E;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-vial" style="color:#62706E"></i> 樣本與影像資訊
+        </h3>
+
+        <div class="mb-4">
+          <label class="form-label">影像類型 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="一般拍照"><span>一般拍照</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="曠時攝影"><span>曠時攝影</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="大圖拼接"><span>大圖拼接</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="Z軸"><span>Z軸</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="環境控制"><span>環境控制</span></label>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded-lg text-xs">
+            <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="lsm-timelapse" placeholder="例: 6hr / 每10分"></div>
+            <div><label class="form-label text-[11px]">Z軸 (層數/步距)</label><input type="text" id="lsm-zstack" placeholder="例: 35層 / 0.4μm"></div>
+            <div><label class="form-label text-[11px]">環境控制 (溫度/加濕)</label><input type="text" id="lsm-env" placeholder="例: 37°C / 有加濕"></div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">物鏡倍率 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="10x"><span>10x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="20x"><span>20x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="40x"><span>40x</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="20x玻"><span>20x玻</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="40x玻"><span>40x玻</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="63x油"><span>63x油</span></label>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">光源波長 (可複選)</label>
+          <div class="flex flex-wrap gap-2">
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="DIC"><span>DIC</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="DAPI"><span>DAPI</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="FITC"><span>FITC</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="DsRED"><span>DsRED</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="A594"><span>A594</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="Cy5"><span>Cy5</span></label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="form-label">樣本載體</label><input type="text" id="lsm-carrier" placeholder="例: SLIDE / Glass-bottom Dish"></div>
+          <div><label class="form-label">樣本內容</label><input type="text" id="lsm-content" placeholder="例: CELL (Neuron) / TISSUE"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div><label class="form-label">樣本數 (片數/盤數)</label><input type="number" id="lsm-slides" value="1" min="0" required></div>
+          <div><label class="form-label">拍照位點數</label><input type="number" id="lsm-positions" value="1" min="0"></div>
+        </div>
+
+        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2">獨立共軛焦通道參數 (將獨立拆分寫入 Channel 1~4 欄位)</label>
+          <div id="lsm-channels-list" class="space-y-2"></div>
+          <button type="button" onclick="addFluoChannel('lsm')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
+            <i class="fas fa-plus mr-1"></i> 新增通道 (Channel)
+          </button>
+        </div>
+
+        <div><label class="form-label">對焦策略</label><input type="text" id="lsm-focus" placeholder="例: 手動找焦 / Definite Focus"></div>
+      </div>
+
+      <div class="form-section" style="border-left-color: #62706E;">
+        <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
+          <i class="fas fa-clock" style="color:#62706E"></i> 服務時數與狀態
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div><label class="form-label">收費時數 (小時)</label><input type="number" step="0.5" id="lsm-charged" value="0" min="0"></div>
+          <div><label class="form-label">非收費時數 (小時)</label><input type="number" step="0.5" id="lsm-nonCharged" value="0" min="0"></div>
+          <div><label class="form-label">服務人次</label><input type="number" id="lsm-count" value="1" min="1"></div>
+        </div>
+        <div class="space-y-4">
+          <div><label class="form-label">服務狀況</label><input type="text" id="lsm-status" placeholder="例: 雷射正常"></div>
+          <div><label class="form-label">其他備註</label><textarea id="lsm-notes" rows="2" placeholder="自由填寫..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mb-10">
+        <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
+        <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#62706E">
+          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- 4. 後台彙整與即時統計                                              -->
+  <!-- ================================================================= -->
+  <div id="view-dashboard" class="tab-content">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3">
+        <div id="dash-inst-icon" class="w-10 h-10 rounded-xl bg-morandi-sidebar/15 flex items-center justify-center text-morandi-sidebar font-bold text-lg">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+        <div>
+          <h2 id="dash-inst-title" class="text-xl font-bold text-gray-800">後台數據彙整</h2>
+          <p id="dash-inst-subtitle" class="text-xs text-gray-400">即時統計與歷史服務明細</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
+        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
+        <select id="dash-year-filter" onchange="renderCurrentDashboard()" class="text-xs font-semibold bg-transparent border-0 p-1 focus:ring-0 cursor-pointer">
+          <option value="ALL">全部年份 (歷年總計)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 數據統計卡片區 -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm">
+        <div class="text-xs font-bold text-gray-400 mb-1">累積服務次數</div>
+        <div id="stat-total-count" class="text-2xl font-black text-gray-800">0</div>
+        <div class="text-[10px] text-gray-400 mt-1">次預約服務紀錄</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm">
+        <div class="text-xs font-bold text-gray-400 mb-1">總收費時數</div>
+        <div id="stat-charged-hours" class="text-2xl font-black text-morandi-sidebar">0 <span class="text-xs font-normal">hr</span></div>
+        <div class="text-[10px] text-gray-400 mt-1">實際計費時數</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm">
+        <div class="text-xs font-bold text-gray-400 mb-1">總非收費時數</div>
+        <div id="stat-noncharged-hours" class="text-2xl font-black text-gray-600">0 <span class="text-xs font-normal">hr</span></div>
+        <div class="text-[10px] text-gray-400 mt-1">教育訓練 / 維護測試</div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm">
+        <div class="text-xs font-bold text-gray-400 mb-1">累計處理玻片/樣本數</div>
+        <div id="stat-total-slides" class="text-2xl font-black text-morandi-tf">0 <span class="text-xs font-normal">片/盤</span></div>
+        <div class="text-[10px] text-gray-400 mt-1">樣本總處理量</div>
+      </div>
+    </div>
+
+    <!-- 歷史服務明細表格 -->
+    <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden mb-10">
+      <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between gap-3 bg-gray-50/50">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-list text-gray-500 text-sm"></i>
+          <span class="text-sm font-bold text-gray-700">歷史服務明細清單</span>
+          <span id="dash-record-count" class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0 筆</span>
+        </div>
+        <div class="relative w-full md:w-72">
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
+          <input type="text" id="dash-search-input" oninput="renderCurrentDashboard()" placeholder="搜尋使用人 / 主持人 / 單位..." class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-gray-600 border-collapse">
+          <thead class="bg-gray-100/70 text-gray-700 font-bold uppercase text-[11px] border-b border-gray-200">
+            <tr>
+              <th class="p-3">服務日期</th>
+              <th class="p-3">使用人 (PI)</th>
+              <th class="p-3">單位</th>
+              <th class="p-3">影像條件</th>
+              <th class="p-3">通道1 (Ch1)</th>
+              <th class="p-3">通道2 (Ch2)</th>
+              <th class="p-3 text-center">玻片數</th>
+              <th class="p-3 text-center">時數 (收/非)</th>
+              <th class="p-3">服務狀況</th>
+            </tr>
+          </thead>
+          <tbody id="dash-table-body" class="divide-y divide-gray-100">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<script>
+let currentInstrument = 'TissueFAXS';
+let labData = { TissueFAXS: [], AxioObserver: [], LSM880: [] };
+
+document.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('input[type="date"]').forEach(inp => inp.value = today);
+
+  // 預設建立 2 組通道輸入列
+  addFluoChannel('tf'); addFluoChannel('tf');
+  addFluoChannel('axio'); addFluoChannel('axio');
+  addFluoChannel('lsm'); addFluoChannel('lsm');
+
+  fetchAllData();
+});
+
+function switchView(instCode, viewType) {
+  if (instCode === 'tf') currentInstrument = 'TissueFAXS';
+  if (instCode === 'axio') currentInstrument = 'AxioObserver';
+  if (instCode === 'lsm') currentInstrument = 'LSM880';
+
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+  const activeBtn = document.getElementById(`nav-${instCode}-${viewType}`);
+  if (activeBtn) activeBtn.classList.add('nav-active');
+
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  if (viewType === 'form') {
+    document.getElementById(`view-${instCode}-form`).classList.add('active');
+  } else {
+    document.getElementById('view-dashboard').classList.add('active');
+    updateDashboardHeader();
+    populateYearFilter();
+    renderCurrentDashboard();
+  }
+}
+
+function toggleTfImageType(type) {
+  const isFluo = type === '螢光';
+  document.getElementById('tf-wavelength-container').style.display = isFluo ? 'block' : 'none';
+  document.getElementById('tf-fl-params-block').style.display = isFluo ? 'block' : 'none';
+  document.getElementById('tf-bf-params-block').style.display = isFluo ? 'none' : 'grid';
+}
+
+// 動態增加獨立螢光通道 (最多限制 4 組，對應 Sheet 欄位)
+function addFluoChannel(prefix) {
+  const container = document.getElementById(`${prefix}-channels-list`);
+  const currentCount = container.querySelectorAll('.channel-row').length;
+  if (currentCount >= 4) {
+    alert("最多僅支援新增 4 組獨立螢光通道！");
+    return;
+  }
+
+  const chIndex = currentCount + 1;
+  const div = document.createElement('div');
+  div.className = "channel-row flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 text-xs";
+  
+  let labelText = `Ch${chIndex}`;
+  let expPlaceholder = prefix === 'lsm' ? "Gain" : "曝光時間";
+  let lightPlaceholder = prefix === 'lsm' ? "雷射強度(%)" : "亮度(%)";
+
+  div.innerHTML = `
+    <span class="font-bold text-gray-500 w-8 text-center flex-shrink-0">${labelText}</span>
+    <input type="text" placeholder="波長/螢光 (例: DAPI)" class="w-1/4 p-1 border rounded channel-type">
+    <input type="text" placeholder="${lightPlaceholder}" class="w-1/4 p-1 border rounded channel-light">
+    <input type="text" placeholder="${expPlaceholder}" class="w-1/4 p-1 border rounded channel-exp">
+    <input type="text" placeholder="Threshold" class="w-1/4 p-1 border rounded channel-thresh">
+    <button type="button" onclick="removeChannelRow(this, '${prefix}')" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash-alt"></i></button>
+  `;
+  container.appendChild(div);
+}
+
+function removeChannelRow(btn, prefix) {
+  btn.parentElement.remove();
+  // 重新計算 Channel 標號
+  const container = document.getElementById(`${prefix}-channels-list`);
+  const rows = container.querySelectorAll('.channel-row');
+  rows.forEach((r, idx) => {
+    r.querySelector('span').innerText = `Ch${idx + 1}`;
+  });
+}
+
+function getCheckedValues(name) {
+  const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+  return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// 收集獨立通道物件資料
+function collectChannelsArray(prefix) {
+  const container = document.getElementById(`${prefix}-channels-list`);
+  const rows = container.querySelectorAll('.channel-row');
+  const channels = [];
+  
+  rows.forEach(r => {
+    const t = r.querySelector('.channel-type')?.value || '';
+    const l = r.querySelector('.channel-light')?.value || '';
+    const e = r.querySelector('.channel-exp')?.value || '';
+    const th = r.querySelector('.channel-thresh')?.value || '';
+    if (t || l || e || th) {
+      channels.push({ type: t, light: l, exp: e, thresh: th });
+    }
+  });
+  return channels;
+}
+
+// ==========================================
+// API 通訊：讀取與寫入 Google Sheets
+// ==========================================
+
+async function fetchAllData(isManual = false) {
+  const syncIcon = document.getElementById('sync-icon');
+  const syncTime = document.getElementById('sync-time');
+  if (syncIcon) syncIcon.classList.add('fa-spin');
+
+  if (GAS_API_URL === "YOUR_GAS_WEB_APP_URL_HERE") {
+    if (syncIcon) syncIcon.classList.remove('fa-spin');
+    syncTime.innerText = "請設定 GAS URL";
+    return;
+  }
+
+  try {
+    const res = await fetch(GAS_API_URL);
+    const result = await res.json();
+    if (result.status === 'success') {
+      labData = result.data;
+      const now = new Date().toLocaleTimeString();
+      syncTime.innerText = `已同步: ${now}`;
+      if (isManual) alert("試算表資料同步成功！");
+      renderCurrentDashboard();
+    }
+  } catch (err) {
+    console.error("Fetch error:", err);
+    syncTime.innerText = "同步失敗";
+  } finally {
+    if (syncIcon) syncIcon.classList.remove('fa-spin');
+  }
+}
+
+async function handleFormSubmit(event, instName) {
+  event.preventDefault();
+  
+  if (GAS_API_URL === "YOUR_GAS_WEB_APP_URL_HERE") {
+    alert("請先設定 Google Apps Script URL！");
+    return;
+  }
+
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  const originText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 資料傳輸中...`;
+
+  let payload = { instrument: instName, data: {} };
+
+  if (instName === 'TissueFAXS') {
+    payload.data = {
+      date: document.getElementById('tf-date').value,
+      unit: document.getElementById('tf-unit').value,
+      pi: document.getElementById('tf-pi').value,
+      user: document.getElementById('tf-user').value,
+      folder: document.getElementById('tf-folder').value,
+      imageType: document.querySelector('input[name="tf-imageType"]:checked').value,
+      mag: getCheckedValues('tf-mag'),
+      wavelength: getCheckedValues('tf-wavelength'),
+      staining: document.getElementById('tf-staining').value,
+      channels: collectChannelsArray('tf'),
+      slides: document.getElementById('tf-slides').value,
+      chargedHours: document.getElementById('tf-charged').value,
+      nonChargedHours: document.getElementById('tf-nonCharged').value,
+      serviceCount: document.getElementById('tf-count').value,
+      status: document.getElementById('tf-status').value,
+      notes: document.getElementById('tf-notes').value
+    };
+  } else if (instName === 'AxioObserver') {
+    const tl = document.getElementById('axio-timelapse').value;
+    const zs = document.getElementById('axio-zstack').value;
+    const env = document.getElementById('axio-env').value;
+    const condList = [];
+    if (tl) condList.push(`曠時:${tl}`);
+    if (zs) condList.push(`Z軸:${zs}`);
+    if (env) condList.push(`環境:${env}`);
+
+    payload.data = {
+      date: document.getElementById('axio-date').value,
+      unit: document.getElementById('axio-unit').value,
+      pi: document.getElementById('axio-pi').value,
+      user: document.getElementById('axio-user').value,
+      folder: document.getElementById('axio-folder').value,
+      shootType: getCheckedValues('axio-shootType'),
+      detailConditions: condList.join(' | '),
+      mag: getCheckedValues('axio-mag'),
+      wavelength: getCheckedValues('axio-wavelength'),
+      carrier: document.getElementById('axio-carrier').value,
+      sampleContent: document.getElementById('axio-content').value,
+      slides: document.getElementById('axio-slides').value,
+      positions: document.getElementById('axio-positions').value,
+      channels: collectChannelsArray('axio'),
+      focus: document.getElementById('axio-focus').value,
+      chargedHours: document.getElementById('axio-charged').value,
+      nonChargedHours: document.getElementById('axio-nonCharged').value,
+      serviceCount: document.getElementById('axio-count').value,
+      status: document.getElementById('axio-status').value,
+      notes: document.getElementById('axio-notes').value
+    };
+  } else if (instName === 'LSM880') {
+    const tl = document.getElementById('lsm-timelapse').value;
+    const zs = document.getElementById('lsm-zstack').value;
+    const env = document.getElementById('lsm-env').value;
+    const condList = [];
+    if (tl) condList.push(`曠時:${tl}`);
+    if (zs) condList.push(`Z軸:${zs}`);
+    if (env) condList.push(`環境:${env}`);
+
+    payload.data = {
+      date: document.getElementById('lsm-date').value,
+      unit: document.getElementById('lsm-unit').value,
+      pi: document.getElementById('lsm-pi').value,
+      user: document.getElementById('lsm-user').value,
+      folder: document.getElementById('lsm-folder').value,
+      shootType: getCheckedValues('lsm-shootType'),
+      detailConditions: condList.join(' | '),
+      mag: getCheckedValues('lsm-mag'),
+      wavelength: getCheckedValues('lsm-wavelength'),
+      carrier: document.getElementById('lsm-carrier').value,
+      sampleContent: document.getElementById('lsm-content').value,
+      slides: document.getElementById('lsm-slides').value,
+      positions: document.getElementById('lsm-positions').value,
+      channels: collectChannelsArray('lsm'),
+      focus: document.getElementById('lsm-focus').value,
+      chargedHours: document.getElementById('lsm-charged').value,
+      nonChargedHours: document.getElementById('lsm-nonCharged').value,
+      serviceCount: document.getElementById('lsm-count').value,
+      status: document.getElementById('lsm-status').value,
+      notes: document.getElementById('lsm-notes').value
+    };
+  }
+
+  try {
+    await fetch(GAS_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    alert("🎉 服務紀錄已成功儲存至 Google 試算表對應欄位！");
+    event.target.reset();
+    fetchAllData();
+  } catch (err) {
+    alert("儲存失敗，請檢查連線！");
+    console.error(err);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originText;
+  }
+}
+
+// ==========================================
+// 後台彙整與即時統計渲染
+// ==========================================
+
+function updateDashboardHeader() {
+  const titles = {
+    TissueFAXS: { title: "全景組織細胞 (TissueFAXS)", sub: "全景掃描與螢光定量明細" },
+    AxioObserver: { title: "電動倒立螢光 (Axio Observer 7)", sub: "活細胞與多維影像紀錄" },
+    LSM880: { title: "倒立共軛焦 (ZEISS LSM880)", sub: "高解析共軛焦與光切片明細" }
+  };
+  document.getElementById('dash-inst-title').innerText = titles[currentInstrument].title;
+  document.getElementById('dash-inst-subtitle').innerText = titles[currentInstrument].sub;
+}
+
+function populateYearFilter() {
+  const rows = labData[currentInstrument] || [];
+  const years = new Set();
+  rows.forEach(r => {
+    const d = r['服務日期'] || r['建立時間'] || '';
+    const match = d.toString().match(/^(\d{4})/);
+    if (match) years.add(match[1]);
+  });
+
+  const select = document.getElementById('dash-year-filter');
+  const currentVal = select.value;
+  select.innerHTML = '<option value="ALL">全部年份 (歷年總計)</option>';
+  Array.from(years).sort().reverse().forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.innerText = `${y} 年`;
+    select.appendChild(opt);
+  });
+  if (Array.from(years).includes(currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+function renderCurrentDashboard() {
+  const rawData = labData[currentInstrument] || [];
+  const selectedYear = document.getElementById('dash-year-filter').value;
+  const keyword = document.getElementById('dash-search-input').value.trim().toLowerCase();
+
+  const filtered = rawData.filter(item => {
+    const dateStr = (item['服務日期'] || '').toString();
+    const matchYear = (selectedYear === 'ALL') || dateStr.startsWith(selectedYear);
+    
+    if (!matchYear) return false;
+    if (!keyword) return true;
+
+    const user = (item['服務使用人'] || '').toLowerCase();
+    const pi = (item['計畫主持人'] || '').toLowerCase();
+    const unit = (item['單位'] || '').toLowerCase();
+    const folder = (item['資料夾名稱'] || '').toLowerCase();
+    return user.includes(keyword) || pi.includes(keyword) || unit.includes(keyword) || folder.includes(keyword);
+  });
+
+  let totalCount = filtered.length;
+  let totalCharged = 0;
+  let totalNonCharged = 0;
+  let totalSlides = 0;
+
+  filtered.forEach(r => {
+    totalCharged += parseFloat(r['收費時數'] || 0) || 0;
+    totalNonCharged += parseFloat(r['非收費時數'] || 0) || 0;
+    totalSlides += parseFloat(r['樣本片數'] || r['樣本數'] || 0) || 0;
+  });
+
+  document.getElementById('stat-total-count').innerText = totalCount;
+  document.getElementById('stat-charged-hours').innerHTML = `${totalCharged.toFixed(1)} <span class="text-xs font-normal">hr</span>`;
+  document.getElementById('stat-noncharged-hours').innerHTML = `${totalNonCharged.toFixed(1)} <span class="text-xs font-normal">hr</span>`;
+  document.getElementById('stat-total-slides').innerHTML = `${totalSlides} <span class="text-xs font-normal">片/盤</span>`;
+  document.getElementById('dash-record-count').innerText = `${filtered.length} 筆`;
+
+  const tbody = document.getElementById('dash-table-body');
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">尚無符合條件的服務紀錄</td></tr>`;
+    return;
+  }
+
+  const sorted = [...filtered].reverse();
+
+  sorted.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = "hover:bg-gray-50/80 transition";
+
+    const date = r['服務日期'] || '-';
+    const user = r['服務使用人'] || '-';
+    const pi = r['計畫主持人'] || '-';
+    const unit = r['單位'] || '-';
+    const type = r['影像類型'] || '-';
+    const mag = r['物鏡倍率'] ? `[${r['物鏡倍率']}]` : '';
+    
+    // 組裝 Ch1 與 Ch2 預覽文字
+    const ch1 = r['Ch1_波長'] ? `${r['Ch1_波長']} (${r['Ch1_亮度']}%, ${r['Ch1_曝光/Gain'] || r['Ch1_曝光'] || ''})` : '-';
+    const ch2 = r['Ch2_波長'] ? `${r['Ch2_波長']} (${r['Ch2_亮度']}%, ${r['Ch2_曝光/Gain'] || r['Ch2_曝光'] || ''})` : '-';
+
+    const slides = r['樣本片數'] || r['樣本數'] || 0;
+    const charged = r['收費時數'] || 0;
+    const nonCharged = r['非收費時數'] || 0;
+    const status = r['服務狀況'] || '正常';
+
+    tr.innerHTML = `
+      <td class="p-3 font-medium text-gray-800 whitespace-nowrap">${date}</td>
+      <td class="p-3 whitespace-nowrap"><span class="font-bold text-gray-700">${user}</span> <span class="text-gray-400 text-[11px]">(${pi})</span></td>
+      <td class="p-3 text-gray-500 whitespace-nowrap">${unit}</td>
+      <td class="p-3 text-gray-600"><span class="font-semibold text-morandi-sidebar">${type}</span> <span class="text-[11px] text-gray-400">${mag}</span></td>
+      <td class="p-3 text-gray-600 text-[11px] font-mono">${ch1}</td>
+      <td class="p-3 text-gray-600 text-[11px] font-mono">${ch2}</td>
+      <td class="p-3 text-center font-bold text-gray-700">${slides}</td>
+      <td class="p-3 text-center whitespace-nowrap"><span class="text-green-700 font-semibold">${charged}h</span> / <span class="text-gray-400">${nonCharged}h</span></td>
+      <td class="p-3"><span class="px-2 py-0.5 rounded-md text-[11px] bg-gray-100 text-gray-600 border border-gray-200">${status}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
