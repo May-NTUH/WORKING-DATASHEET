@@ -110,7 +110,7 @@ tailwind.config = {
   }
   .modal-backdrop.open { display: flex; animation: fadeIn 0.2s ease-out; }
   .modal-box {
-    background: #fff; border-radius: 1.1rem; width: 100%; max-width: 46rem;
+    background: #fff; border-radius: 1.1rem; width: 100%; max-width: 52rem;
     box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden;
   }
   .modal-header {
@@ -119,10 +119,7 @@ tailwind.config = {
   }
   .modal-body { padding: 1.5rem; max-height: 65vh; overflow-y: auto; }
   .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #EEECE8; display: flex; justify-content: flex-end; gap: 0.6rem; background: #FAFAF8; }
-  .field-row { display: grid; grid-template-columns: 11rem 1fr; gap: 0.75rem; align-items: start; padding: 0.55rem 0; border-bottom: 1px dashed #EFEDE9; }
-  .field-row:last-child { border-bottom: none; }
-  .field-row .field-label { font-size: 0.78rem; font-weight: 700; color: #6B7280; padding-top: 0.5rem; }
-  .field-row .field-value { font-size: 0.85rem; color: #1F2937; padding-top: 0.5rem; word-break: break-word; }
+
 
   /* ===== Toast ===== */
   #toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 70; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -209,7 +206,7 @@ tailwind.config = {
 
 <!-- ===== 主要操作區域 ===== -->
 <main class="flex-1 overflow-y-auto p-4 md:p-8 w-full min-w-0">
-<div class="max-w-4xl mx-auto">
+<div class="max-w-7xl mx-auto">
 
   <!-- ================================================================= -->
   <!-- 1. TissueFAXS: 新增紀錄                                            -->
@@ -230,7 +227,7 @@ tailwind.config = {
         <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
           <i class="fas fa-id-card text-morandi-tf"></i> 客戶基本資料
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="tf-date" required></div>
           <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="tf-unit" placeholder="例: 生科系 / 榮總" required></div>
           <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="tf-pi" placeholder="例: 王教授" required></div>
@@ -345,7 +342,7 @@ tailwind.config = {
         <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
           <i class="fas fa-id-card" style="color:#7A8684"></i> 客戶基本資料
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="axio-date" required></div>
           <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="axio-unit" placeholder="例: 醫學研究部" required></div>
           <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="axio-pi" placeholder="例: 李教授" required></div>
@@ -466,7 +463,7 @@ tailwind.config = {
         <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
           <i class="fas fa-id-card" style="color:#62706E"></i> 客戶基本資料
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="lsm-date" required></div>
           <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="lsm-unit" placeholder="例: 藥學系" required></div>
           <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="lsm-pi" placeholder="例: 張教授" required></div>
@@ -654,8 +651,7 @@ tailwind.config = {
               <th class="p-3">使用人 (PI)</th>
               <th class="p-3">單位</th>
               <th class="p-3">影像條件</th>
-              <th class="p-3">通道1 (Ch1)</th>
-              <th class="p-3">通道2 (Ch2)</th>
+              <th class="p-3">光源波長</th>
               <th class="p-3 text-center">玻片數</th>
               <th class="p-3 text-center">時數 (收/非)</th>
               <th class="p-3">服務狀況</th>
@@ -734,6 +730,298 @@ const CHANNEL_CONFIG = {
           labels: { type:'雷射波長', light:'雷射強度(%)', exp:'Gain', pinhole:'Pinhole(AU)' } }
 };
 
+// 儀器代碼對照
+const INST_SHORT = { TissueFAXS: 'tf', AxioObserver: 'axio', LSM880: 'lsm' };
+
+// 各儀器可複選勾選項目設定（新增表單與編輯視窗共用，確保選項完全一致）
+const OPTIONS = {
+  tf: {
+    mag: ['10x','20x','40x'],
+    wavelength: ['mDAPI','mFITC','mTEXA','sDAPI','sGFP','sRho','sCy5']
+  },
+  axio: {
+    shootType: ['一般拍照','曠時攝影','大圖拼接','Z軸','環境控制'],
+    mag: ['10x','20x','40x','20x玻','40x玻','63x油'],
+    wavelength: ['PH1','PH2','DIC','DAPI','FITC','DsRED','A594','Cy5']
+  },
+  lsm: {
+    shootType: ['一般拍照','曠時攝影','大圖拼接','Z軸','環境控制'],
+    mag: ['5X','10X','20X','40X','63X','100X'],
+    wavelength: ['DIC','DAPI','FITC','RHO','CY5']
+  }
+};
+
+function pillGroupHTML(name, options, type) {
+  type = type || 'checkbox';
+  return options.map(v =>
+    `<label class="checkbox-pill"><input type="${type}" name="${name}" value="${v}"><span>${v}</span></label>`
+  ).join('');
+}
+
+// 依「服務日期」等欄位切分逗號字串成 tag 陣列（供編輯視窗還原勾選狀態使用）
+function checkPillValues(name, valuesStr) {
+  const values = splitTags(valuesStr);
+  document.querySelectorAll(`input[name="${name}"]`).forEach(inp => {
+    inp.checked = values.includes(inp.value);
+  });
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = (val === undefined || val === null) ? '' : val;
+}
+
+// 將「曠時:xxx | Z軸:xxx | 環境:xxx」格式的詳細條件字串還原成三個獨立欄位
+function parseDetailConditions(str) {
+  const result = { tl: '', zs: '', env: '' };
+  if (!str) return result;
+  str.toString().split('|').map(s => s.trim()).forEach(part => {
+    const m1 = part.match(/^曠時:(.*)$/);
+    const m2 = part.match(/^Z軸:(.*)$/);
+    const m3 = part.match(/^環境:(.*)$/);
+    if (m1) result.tl = m1[1];
+    if (m2) result.zs = m2[1];
+    if (m3) result.env = m3[1];
+  });
+  return result;
+}
+
+function toggleWavelengthVisibility(prefix, imageType) {
+  const el = document.getElementById(`${prefix}-wavelength-container`);
+  if (el) el.style.display = (imageType === '螢光') ? 'block' : 'none';
+}
+
+// ==========================================
+// 編輯視窗：表單區塊產生器（結構與新增表單完全對應，
+// 勾選欄位維持勾選、鍵入欄位維持鍵入，避免資料錯亂）
+// ==========================================
+
+function basicInfoBlockHTML(p) {
+  return `
+    <div class="mb-5">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-id-card"></i>客戶基本資料</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div><label class="form-label text-xs">服務日期</label><input type="date" id="${p}-date"></div>
+        <div><label class="form-label text-xs">單位</label><input type="text" id="${p}-unit"></div>
+        <div><label class="form-label text-xs">計畫主持人 (PI)</label><input type="text" id="${p}-pi"></div>
+        <div><label class="form-label text-xs">服務使用人</label><input type="text" id="${p}-user"></div>
+        <div class="sm:col-span-2"><label class="form-label text-xs">資料夾名稱</label><input type="text" id="${p}-folder"></div>
+      </div>
+    </div>`;
+}
+
+function hoursStatusBlockHTML(p) {
+  return `
+    <div class="mb-2">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-clock"></i>服務時數與狀態</div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div><label class="form-label text-xs">收費時數</label><input type="number" step="0.5" id="${p}-charged" min="0"></div>
+        <div><label class="form-label text-xs">非收費時數</label><input type="number" step="0.5" id="${p}-nonCharged" min="0"></div>
+        <div><label class="form-label text-xs">服務人次</label><input type="number" id="${p}-count" min="1"></div>
+      </div>
+      <div class="space-y-3">
+        <div><label class="form-label text-xs">服務狀況</label><input type="text" id="${p}-status"></div>
+        <div><label class="form-label text-xs"><i class="fas fa-flask mr-1 text-gray-400"></i>研究內容</label><textarea rows="2" id="${p}-notes"></textarea></div>
+      </div>
+    </div>`;
+}
+
+function systemInfoBlockHTML(p) {
+  return `
+    <div class="mt-4 pt-3 border-t border-dashed border-gray-200">
+      <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-clock-rotate-left"></i>系統資訊（唯讀）</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div><label class="form-label text-[11px] text-gray-400">建立時間</label><input type="text" id="${p}-sys-created" disabled></div>
+        <div><label class="form-label text-[11px] text-gray-400">最後修改時間</label><input type="text" id="${p}-sys-modified" disabled placeholder="儲存後自動更新"></div>
+      </div>
+    </div>`;
+}
+
+function tfImageBlockHTML(p) {
+  return `
+    <div class="mb-5">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-vial"></i>樣本與影像資訊</div>
+      <div class="mb-3">
+        <label class="form-label text-xs">影像類型</label>
+        <div class="flex gap-3">
+          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="螢光" onchange="toggleWavelengthVisibility('${p}', this.value)"><span><i class="fas fa-sun mr-1 text-xs"></i>螢光</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="可見光" onchange="toggleWavelengthVisibility('${p}', this.value)"><span><i class="fas fa-lightbulb mr-1 text-xs"></i>可見光</span></label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.tf.mag)}</div>
+      </div>
+      <div id="${p}-wavelength-container" class="mb-3">
+        <label class="form-label text-xs">光源波長 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.tf.wavelength)}</div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立螢光通道參數</label>
+        <div id="${p}-channels-list" class="space-y-2"></div>
+        <button type="button" onclick="addFluoChannel('tf','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div><label class="form-label text-xs">樣本片數</label><input type="number" id="${p}-slides" min="0"></div>
+        <div><label class="form-label text-xs">染色樣態備註</label><input type="text" id="${p}-staining"></div>
+      </div>
+    </div>`;
+}
+
+function axioImageBlockHTML(p) {
+  return `
+    <div class="mb-5">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-vial"></i>樣本與影像資訊</div>
+      <div class="mb-3">
+        <label class="form-label text-xs">影像類型 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-shootType`, OPTIONS.axio.shootType)}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 p-2 bg-gray-50 rounded-lg text-xs">
+          <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="${p}-timelapse"></div>
+          <div><label class="form-label text-[11px]">Z軸 (層數/步距)</label><input type="text" id="${p}-zstack"></div>
+          <div><label class="form-label text-[11px]">環境控制 (溫度/加濕)</label><input type="text" id="${p}-env"></div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.axio.mag)}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-xs">光源波長 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.axio.wavelength)}</div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div><label class="form-label text-xs">樣本載體</label><input type="text" id="${p}-carrier"></div>
+        <div><label class="form-label text-xs">樣本內容</label><input type="text" id="${p}-content"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div><label class="form-label text-xs">樣本數</label><input type="number" id="${p}-slides" min="0"></div>
+        <div><label class="form-label text-xs">拍照位點數</label><input type="number" id="${p}-positions" min="0"></div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立波長通道參數</label>
+        <div id="${p}-channels-list" class="space-y-2"></div>
+        <button type="button" onclick="addFluoChannel('axio','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
+      </div>
+      <div><label class="form-label text-xs">對焦策略</label><input type="text" id="${p}-focus"></div>
+    </div>`;
+}
+
+function lsmImageBlockHTML(p) {
+  return `
+    <div class="mb-5">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-vial"></i>樣本與影像資訊</div>
+      <div class="mb-3">
+        <label class="form-label text-xs">影像類型 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-shootType`, OPTIONS.lsm.shootType)}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 p-2 bg-gray-50 rounded-lg text-xs">
+          <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="${p}-timelapse"></div>
+          <div><label class="form-label text-[11px]">Z軸 (層數/步距)</label><input type="text" id="${p}-zstack"></div>
+          <div><label class="form-label text-[11px]">環境控制 (溫度/加濕)</label><input type="text" id="${p}-env"></div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.lsm.mag)}</div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label text-xs">雷射波長 (可複選)</label>
+        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.lsm.wavelength)}</div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div><label class="form-label text-xs">樣本載體</label><input type="text" id="${p}-carrier"></div>
+        <div><label class="form-label text-xs">樣本內容</label><input type="text" id="${p}-content"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div><label class="form-label text-xs">樣本數</label><input type="number" id="${p}-slides" min="0"></div>
+        <div><label class="form-label text-xs">拍照位點數</label><input type="number" id="${p}-positions" min="0"></div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">掃描參數</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div><label class="form-label text-[11px]">Frame Size</label><input type="text" id="${p}-frameSize"></div>
+          <div><label class="form-label text-[11px]">Speed</label><input type="text" id="${p}-scanSpeed"></div>
+          <div><label class="form-label text-[11px]">Average Number</label><input type="text" id="${p}-avgNumber"></div>
+          <div><label class="form-label text-[11px]">Method</label>
+            <select id="${p}-method"><option value="">未指定</option><option value="Mean">Mean</option><option value="Sum">Sum</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立共軛焦通道參數</label>
+        <div id="${p}-channels-list" class="space-y-2"></div>
+        <button type="button" onclick="addFluoChannel('lsm','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
+      </div>
+    </div>`;
+}
+
+function buildEditFormHTML(instCode) {
+  const p = `edit-${instCode}`;
+  const middle = instCode === 'tf' ? tfImageBlockHTML(p)
+               : instCode === 'axio' ? axioImageBlockHTML(p)
+               : lsmImageBlockHTML(p);
+  return basicInfoBlockHTML(p) + middle + hoursStatusBlockHTML(p) + systemInfoBlockHTML(p);
+}
+
+function populateEditForm(instCode, record) {
+  const p = `edit-${instCode}`;
+  setVal(`${p}-date`, record['服務日期']);
+  setVal(`${p}-unit`, record['單位']);
+  setVal(`${p}-pi`, record['計畫主持人']);
+  setVal(`${p}-user`, record['服務使用人']);
+  setVal(`${p}-folder`, record['資料夾名稱']);
+
+  if (instCode === 'tf') {
+    const imgType = record['影像類型'] === '可見光' ? '可見光' : '螢光';
+    const radio = document.querySelector(`input[name="${p}-imageType"][value="${imgType}"]`);
+    if (radio) radio.checked = true;
+    toggleWavelengthVisibility(p, imgType);
+    checkPillValues(`${p}-mag`, record['物鏡倍率']);
+    checkPillValues(`${p}-wavelength`, record['光源波長']);
+    fillChannelsFromRecord('tf', p, record);
+    setVal(`${p}-slides`, record['樣本片數']);
+    setVal(`${p}-staining`, record['染色樣態備註']);
+  } else if (instCode === 'axio') {
+    checkPillValues(`${p}-shootType`, record['影像類型']);
+    const cond = parseDetailConditions(record['詳細條件']);
+    setVal(`${p}-timelapse`, cond.tl);
+    setVal(`${p}-zstack`, cond.zs);
+    setVal(`${p}-env`, cond.env);
+    checkPillValues(`${p}-mag`, record['物鏡倍率']);
+    checkPillValues(`${p}-wavelength`, record['光源波長']);
+    setVal(`${p}-carrier`, record['樣本載體']);
+    setVal(`${p}-content`, record['樣本內容']);
+    setVal(`${p}-slides`, record['樣本數']);
+    setVal(`${p}-positions`, record['拍照位點數']);
+    fillChannelsFromRecord('axio', p, record);
+    setVal(`${p}-focus`, record['對焦策略']);
+  } else if (instCode === 'lsm') {
+    checkPillValues(`${p}-shootType`, record['影像類型']);
+    const cond = parseDetailConditions(record['詳細條件']);
+    setVal(`${p}-timelapse`, cond.tl);
+    setVal(`${p}-zstack`, cond.zs);
+    setVal(`${p}-env`, cond.env);
+    checkPillValues(`${p}-mag`, record['物鏡倍率']);
+    checkPillValues(`${p}-wavelength`, record['雷射波長']);
+    setVal(`${p}-carrier`, record['樣本載體']);
+    setVal(`${p}-content`, record['樣本內容']);
+    setVal(`${p}-slides`, record['樣本數']);
+    setVal(`${p}-positions`, record['拍照位點數']);
+    setVal(`${p}-frameSize`, record['Frame Size']);
+    setVal(`${p}-scanSpeed`, record['Scan Speed']);
+    setVal(`${p}-avgNumber`, record['Average Number']);
+    setVal(`${p}-method`, record['Method']);
+    fillChannelsFromRecord('lsm', p, record);
+  }
+
+  setVal(`${p}-charged`, record['收費時數']);
+  setVal(`${p}-nonCharged`, record['非收費時數']);
+  setVal(`${p}-count`, record['服務人次']);
+  setVal(`${p}-status`, record['服務狀況']);
+  setVal(`${p}-notes`, record['研究內容']);
+  setVal(`${p}-sys-created`, record['建立時間']);
+  setVal(`${p}-sys-modified`, record['最後修改時間'] || '（尚未修改過）');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const today = new Date().toISOString().split('T')[0];
   document.querySelectorAll('input[type="date"]').forEach(inp => inp.value = today);
@@ -783,10 +1071,12 @@ function toggleTfImageType(type) {
   document.getElementById('tf-bf-params-block').style.display = isFluo ? 'none' : 'grid';
 }
 
-// 動態增加獨立通道（欄位內容依 CHANNEL_CONFIG[prefix] 而定）
-function addFluoChannel(prefix) {
-  const config = CHANNEL_CONFIG[prefix];
-  const container = document.getElementById(`${prefix}-channels-list`);
+// 動態增加獨立通道（欄位內容依 CHANNEL_CONFIG[instCode] 而定）
+// domPrefix：實際 DOM id 前綴，預設等於 instCode；編輯視窗會用 'edit-tf' 等前綴避免 id 衝突
+function addFluoChannel(instCode, domPrefix) {
+  domPrefix = domPrefix || instCode;
+  const config = CHANNEL_CONFIG[instCode];
+  const container = document.getElementById(`${domPrefix}-channels-list`);
   const currentCount = container.querySelectorAll('.channel-row').length;
   if (currentCount >= config.max) {
     showToast(`最多僅支援新增 ${config.max} 組通道！`, 'info');
@@ -804,15 +1094,15 @@ function addFluoChannel(prefix) {
   div.innerHTML = `
     <span class="font-bold text-gray-500 w-8 text-center flex-shrink-0">Ch${chIndex}</span>
     ${inputs}
-    <button type="button" onclick="removeChannelRow(this, '${prefix}')" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash-alt"></i></button>
+    <button type="button" onclick="removeChannelRow(this, '${domPrefix}')" class="text-red-400 hover:text-red-600 px-1"><i class="fas fa-trash-alt"></i></button>
   `;
   container.appendChild(div);
 }
 
-function removeChannelRow(btn, prefix) {
+function removeChannelRow(btn, domPrefix) {
   btn.parentElement.remove();
   // 重新計算 Channel 標號
-  const container = document.getElementById(`${prefix}-channels-list`);
+  const container = document.getElementById(`${domPrefix}-channels-list`);
   const rows = container.querySelectorAll('.channel-row');
   rows.forEach((r, idx) => {
     r.querySelector('span').innerText = `Ch${idx + 1}`;
@@ -824,10 +1114,11 @@ function getCheckedValues(name) {
   return Array.from(checkboxes).map(cb => cb.value);
 }
 
-// 收集獨立通道物件資料（依 CHANNEL_CONFIG[prefix].fields 動態組成 key）
-function collectChannelsArray(prefix) {
-  const config = CHANNEL_CONFIG[prefix];
-  const container = document.getElementById(`${prefix}-channels-list`);
+// 收集獨立通道物件資料（依 CHANNEL_CONFIG[instCode].fields 動態組成 key）
+function collectChannelsArray(instCode, domPrefix) {
+  domPrefix = domPrefix || instCode;
+  const config = CHANNEL_CONFIG[instCode];
+  const container = document.getElementById(`${domPrefix}-channels-list`);
   const rows = container.querySelectorAll('.channel-row');
   const channels = [];
 
@@ -842,6 +1133,35 @@ function collectChannelsArray(prefix) {
     if (hasValue) channels.push(ch);
   });
   return channels;
+}
+
+// 依 record 中的 Ch{n}_xxx 欄位，把值填回編輯表單的通道列（維持與前台一致的輸入框）
+function fillChannelsFromRecord(instCode, domPrefix, record) {
+  const config = CHANNEL_CONFIG[instCode];
+  // Ch 欄位標題後綴對照：type→波長, light→亮度, exp→曝光/Gain, thresh→Threshold, pinhole→Pinhole
+  const headerSuffix = {
+    type: '波長', light: '亮度',
+    exp: (instCode === 'lsm') ? 'Gain' : '曝光',
+    thresh: 'Threshold', pinhole: 'Pinhole'
+  };
+
+  for (let i = 1; i <= config.max; i++) {
+    const hasAny = config.fields.some(f => {
+      const key = `Ch${i}_${headerSuffix[f]}`;
+      return record[key] !== undefined && record[key] !== '';
+    });
+    if (!hasAny) continue;
+
+    addFluoChannel(instCode, domPrefix);
+    const container = document.getElementById(`${domPrefix}-channels-list`);
+    const row = container.querySelectorAll('.channel-row')[i - 1];
+    if (!row) continue;
+    config.fields.forEach(f => {
+      const key = `Ch${i}_${headerSuffix[f]}`;
+      const input = row.querySelector(`.channel-${f}`);
+      if (input && record[key] !== undefined) input.value = record[key];
+    });
+  }
 }
 
 // ==========================================
@@ -902,92 +1222,155 @@ async function fetchAllData(isManual = false) {
 }
 
 // 依目前表單內容組成 payload.data（新增用）
-function buildPayloadData(instName) {
+// instName: 'TissueFAXS' / 'AxioObserver' / 'LSM880'
+// domPrefix: 實際輸入框 id 的前綴。新增表單預設為 'tf'/'axio'/'lsm'；
+//            編輯視窗會傳入 'edit-tf'/'edit-axio'/'edit-lsm'，確保兩邊欄位型態完全一致
+//            （勾選維持勾選、鍵入維持鍵入），避免資料錯亂。
+function buildPayloadData(instName, domPrefix) {
   if (instName === 'TissueFAXS') {
+    const p = domPrefix || 'tf';
     return {
-      date: document.getElementById('tf-date').value,
-      unit: document.getElementById('tf-unit').value,
-      pi: document.getElementById('tf-pi').value,
-      user: document.getElementById('tf-user').value,
-      folder: document.getElementById('tf-folder').value,
-      imageType: document.querySelector('input[name="tf-imageType"]:checked').value,
-      mag: getCheckedValues('tf-mag'),
-      wavelength: getCheckedValues('tf-wavelength'),
-      staining: document.getElementById('tf-staining').value,
-      channels: collectChannelsArray('tf'),
-      slides: document.getElementById('tf-slides').value,
-      chargedHours: document.getElementById('tf-charged').value,
-      nonChargedHours: document.getElementById('tf-nonCharged').value,
-      serviceCount: document.getElementById('tf-count').value,
-      status: document.getElementById('tf-status').value,
-      notes: document.getElementById('tf-notes').value
+      date: document.getElementById(`${p}-date`).value,
+      unit: document.getElementById(`${p}-unit`).value,
+      pi: document.getElementById(`${p}-pi`).value,
+      user: document.getElementById(`${p}-user`).value,
+      folder: document.getElementById(`${p}-folder`).value,
+      imageType: document.querySelector(`input[name="${p}-imageType"]:checked`).value,
+      mag: getCheckedValues(`${p}-mag`),
+      wavelength: getCheckedValues(`${p}-wavelength`),
+      staining: document.getElementById(`${p}-staining`).value,
+      channels: collectChannelsArray('tf', p),
+      slides: document.getElementById(`${p}-slides`).value,
+      chargedHours: document.getElementById(`${p}-charged`).value,
+      nonChargedHours: document.getElementById(`${p}-nonCharged`).value,
+      serviceCount: document.getElementById(`${p}-count`).value,
+      status: document.getElementById(`${p}-status`).value,
+      notes: document.getElementById(`${p}-notes`).value
     };
   } else if (instName === 'AxioObserver') {
-    const tl = document.getElementById('axio-timelapse').value;
-    const zs = document.getElementById('axio-zstack').value;
-    const env = document.getElementById('axio-env').value;
+    const p = domPrefix || 'axio';
+    const tl = document.getElementById(`${p}-timelapse`).value;
+    const zs = document.getElementById(`${p}-zstack`).value;
+    const env = document.getElementById(`${p}-env`).value;
     const condList = [];
     if (tl) condList.push(`曠時:${tl}`);
     if (zs) condList.push(`Z軸:${zs}`);
     if (env) condList.push(`環境:${env}`);
 
     return {
-      date: document.getElementById('axio-date').value,
-      unit: document.getElementById('axio-unit').value,
-      pi: document.getElementById('axio-pi').value,
-      user: document.getElementById('axio-user').value,
-      folder: document.getElementById('axio-folder').value,
-      shootType: getCheckedValues('axio-shootType'),
+      date: document.getElementById(`${p}-date`).value,
+      unit: document.getElementById(`${p}-unit`).value,
+      pi: document.getElementById(`${p}-pi`).value,
+      user: document.getElementById(`${p}-user`).value,
+      folder: document.getElementById(`${p}-folder`).value,
+      shootType: getCheckedValues(`${p}-shootType`),
       detailConditions: condList.join(' | '),
-      mag: getCheckedValues('axio-mag'),
-      wavelength: getCheckedValues('axio-wavelength'),
-      carrier: document.getElementById('axio-carrier').value,
-      sampleContent: document.getElementById('axio-content').value,
-      slides: document.getElementById('axio-slides').value,
-      positions: document.getElementById('axio-positions').value,
-      channels: collectChannelsArray('axio'),
-      focus: document.getElementById('axio-focus').value,
-      chargedHours: document.getElementById('axio-charged').value,
-      nonChargedHours: document.getElementById('axio-nonCharged').value,
-      serviceCount: document.getElementById('axio-count').value,
-      status: document.getElementById('axio-status').value,
-      notes: document.getElementById('axio-notes').value
+      mag: getCheckedValues(`${p}-mag`),
+      wavelength: getCheckedValues(`${p}-wavelength`),
+      carrier: document.getElementById(`${p}-carrier`).value,
+      sampleContent: document.getElementById(`${p}-content`).value,
+      slides: document.getElementById(`${p}-slides`).value,
+      positions: document.getElementById(`${p}-positions`).value,
+      channels: collectChannelsArray('axio', p),
+      focus: document.getElementById(`${p}-focus`).value,
+      chargedHours: document.getElementById(`${p}-charged`).value,
+      nonChargedHours: document.getElementById(`${p}-nonCharged`).value,
+      serviceCount: document.getElementById(`${p}-count`).value,
+      status: document.getElementById(`${p}-status`).value,
+      notes: document.getElementById(`${p}-notes`).value
     };
   } else if (instName === 'LSM880') {
-    const tl = document.getElementById('lsm-timelapse').value;
-    const zs = document.getElementById('lsm-zstack').value;
-    const env = document.getElementById('lsm-env').value;
+    const p = domPrefix || 'lsm';
+    const tl = document.getElementById(`${p}-timelapse`).value;
+    const zs = document.getElementById(`${p}-zstack`).value;
+    const env = document.getElementById(`${p}-env`).value;
     const condList = [];
     if (tl) condList.push(`曠時:${tl}`);
     if (zs) condList.push(`Z軸:${zs}`);
     if (env) condList.push(`環境:${env}`);
 
     return {
-      date: document.getElementById('lsm-date').value,
-      unit: document.getElementById('lsm-unit').value,
-      pi: document.getElementById('lsm-pi').value,
-      user: document.getElementById('lsm-user').value,
-      folder: document.getElementById('lsm-folder').value,
-      shootType: getCheckedValues('lsm-shootType'),
+      date: document.getElementById(`${p}-date`).value,
+      unit: document.getElementById(`${p}-unit`).value,
+      pi: document.getElementById(`${p}-pi`).value,
+      user: document.getElementById(`${p}-user`).value,
+      folder: document.getElementById(`${p}-folder`).value,
+      shootType: getCheckedValues(`${p}-shootType`),
       detailConditions: condList.join(' | '),
-      mag: getCheckedValues('lsm-mag'),
-      wavelength: getCheckedValues('lsm-wavelength'),
-      carrier: document.getElementById('lsm-carrier').value,
-      sampleContent: document.getElementById('lsm-content').value,
-      slides: document.getElementById('lsm-slides').value,
-      positions: document.getElementById('lsm-positions').value,
-      frameSize: document.getElementById('lsm-frameSize').value,
-      scanSpeed: document.getElementById('lsm-scanSpeed').value,
-      avgNumber: document.getElementById('lsm-avgNumber').value,
-      method: document.getElementById('lsm-method').value,
-      channels: collectChannelsArray('lsm'),
-      chargedHours: document.getElementById('lsm-charged').value,
-      nonChargedHours: document.getElementById('lsm-nonCharged').value,
-      serviceCount: document.getElementById('lsm-count').value,
-      status: document.getElementById('lsm-status').value,
-      notes: document.getElementById('lsm-notes').value
+      mag: getCheckedValues(`${p}-mag`),
+      wavelength: getCheckedValues(`${p}-wavelength`),
+      carrier: document.getElementById(`${p}-carrier`).value,
+      sampleContent: document.getElementById(`${p}-content`).value,
+      slides: document.getElementById(`${p}-slides`).value,
+      positions: document.getElementById(`${p}-positions`).value,
+      frameSize: document.getElementById(`${p}-frameSize`).value,
+      scanSpeed: document.getElementById(`${p}-scanSpeed`).value,
+      avgNumber: document.getElementById(`${p}-avgNumber`).value,
+      method: document.getElementById(`${p}-method`).value,
+      channels: collectChannelsArray('lsm', p),
+      chargedHours: document.getElementById(`${p}-charged`).value,
+      nonChargedHours: document.getElementById(`${p}-nonCharged`).value,
+      serviceCount: document.getElementById(`${p}-count`).value,
+      status: document.getElementById(`${p}-status`).value,
+      notes: document.getElementById(`${p}-notes`).value
     };
   }
+}
+
+// 依 instName 對照 Google Sheet 欄位順序，組出寫入用的一整列陣列
+// （與 code.js 的 handleInsert 完全一致，供「編輯」功能覆寫既有列使用）
+function buildRowDataArray(instName, record) {
+  const ch = record.channels || [];
+  const getChVal = (idx, key) => (ch[idx] && ch[idx][key]) ? ch[idx][key] : "";
+
+  if (instName === 'TissueFAXS') {
+    return [
+      record.date || "", record.unit || "", record.pi || "", record.user || "",
+      record.folder || "", record.imageType || "",
+      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
+      record.staining || "",
+      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'), getChVal(0,'thresh'),
+      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'), getChVal(1,'thresh'),
+      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'), getChVal(2,'thresh'),
+      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'), getChVal(3,'thresh'),
+      record.slides || 0, record.chargedHours || 0, record.nonChargedHours || 0,
+      record.serviceCount || 1, record.status || "", record.notes || "",
+      "", ""
+    ];
+  } else if (instName === 'AxioObserver') {
+    return [
+      record.date || "", record.unit || "", record.pi || "", record.user || "",
+      record.folder || "", (record.shootType || []).join(", "), record.detailConditions || "",
+      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
+      record.carrier || "", record.sampleContent || "",
+      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'),
+      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'),
+      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'),
+      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'),
+      getChVal(4,'type'), getChVal(4,'light'), getChVal(4,'exp'),
+      record.slides || 0, record.positions || 0, record.focus || "",
+      record.chargedHours || 0, record.nonChargedHours || 0,
+      record.serviceCount || 1, record.status || "", record.notes || "",
+      "", ""
+    ];
+  } else if (instName === 'LSM880') {
+    return [
+      record.date || "", record.unit || "", record.pi || "", record.user || "",
+      record.folder || "", (record.shootType || []).join(", "), record.detailConditions || "",
+      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
+      record.carrier || "", record.sampleContent || "",
+      record.frameSize || "", record.scanSpeed || "", record.avgNumber || "", record.method || "",
+      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'), getChVal(0,'pinhole'),
+      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'), getChVal(1,'pinhole'),
+      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'), getChVal(2,'pinhole'),
+      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'), getChVal(3,'pinhole'),
+      record.slides || 0, record.positions || 0,
+      record.chargedHours || 0, record.nonChargedHours || 0,
+      record.serviceCount || 1, record.status || "", record.notes || "",
+      "", ""
+    ];
+  }
+  return [];
 }
 
 async function handleFormSubmit(event, instName) {
@@ -1105,11 +1488,13 @@ function renderCurrentDashboard() {
   tbody.innerHTML = '';
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-2xl mb-2 block"></i>尚無符合條件的服務紀錄</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-2xl mb-2 block"></i>尚無符合條件的服務紀錄</td></tr>`;
     return;
   }
 
   const sorted = [...filtered].reverse();
+
+  const wavelengthHeader = currentInstrument === 'LSM880' ? '雷射波長' : '光源波長';
 
   sorted.forEach(r => {
     const tr = document.createElement('tr');
@@ -1119,12 +1504,6 @@ function renderCurrentDashboard() {
     const user = r['服務使用人'] || '-';
     const pi = r['計畫主持人'] || '-';
     const unit = r['單位'] || '-';
-    const type = r['影像類型'] || '-';
-    const mag = r['物鏡倍率'] ? `[${r['物鏡倍率']}]` : '';
-
-    // 組裝 Ch1 與 Ch2 預覽文字
-    const ch1 = r['Ch1_波長'] ? `${r['Ch1_波長']} (${r['Ch1_亮度']}%, ${r['Ch1_曝光/Gain'] || r['Ch1_曝光'] || ''})` : '-';
-    const ch2 = r['Ch2_波長'] ? `${r['Ch2_波長']} (${r['Ch2_亮度']}%, ${r['Ch2_曝光/Gain'] || r['Ch2_曝光'] || ''})` : '-';
 
     const slides = r['樣本片數'] || r['樣本數'] || 0;
     const charged = r['收費時數'] || 0;
@@ -1135,9 +1514,8 @@ function renderCurrentDashboard() {
       <td class="p-3 font-medium text-gray-800 whitespace-nowrap">${date}</td>
       <td class="p-3 whitespace-nowrap"><span class="font-bold text-gray-700">${user}</span> <span class="text-gray-400 text-[11px]">(${pi})</span></td>
       <td class="p-3 text-gray-500 whitespace-nowrap">${unit}</td>
-      <td class="p-3 text-gray-600"><span class="font-semibold text-morandi-sidebar">${type}</span> <span class="text-[11px] text-gray-400">${mag}</span></td>
-      <td class="p-3 text-gray-600 text-[11px] font-mono">${ch1}</td>
-      <td class="p-3 text-gray-600 text-[11px] font-mono">${ch2}</td>
+      <td class="p-3"><div class="flex flex-wrap max-w-[15rem]">${renderTypeBadges(r['影像類型'])}${renderMagBadges(r['物鏡倍率'])}</div></td>
+      <td class="p-3"><div class="flex flex-wrap max-w-[13rem]">${renderWavelengthBadges(r[wavelengthHeader])}</div></td>
       <td class="p-3 text-center font-bold text-gray-700">${slides}</td>
       <td class="p-3 text-center whitespace-nowrap"><span class="text-green-700 font-semibold">${charged}h</span> / <span class="text-gray-400">${nonCharged}h</span></td>
       <td class="p-3"><span class="px-2 py-0.5 rounded-md text-[11px] bg-gray-100 text-gray-600 border border-gray-200">${status}</span></td>
@@ -1151,6 +1529,57 @@ function renderCurrentDashboard() {
 }
 
 // ==========================================
+// 徽章渲染輔助函式（影像條件 / 光源波長，以活潑的塊狀 ICON 呈現）
+// ==========================================
+const TYPE_BADGE_MAP = {
+  '螢光':    { icon: 'fa-sun',                cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  '可見光':  { icon: 'fa-lightbulb',          cls: 'bg-gray-50 text-gray-600 border-gray-200' },
+  '一般拍照': { icon: 'fa-camera',             cls: 'bg-slate-50 text-slate-600 border-slate-200' },
+  '曠時攝影': { icon: 'fa-clock-rotate-left',  cls: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
+  '大圖拼接': { icon: 'fa-images',             cls: 'bg-teal-50 text-teal-600 border-teal-200' },
+  'Z軸':     { icon: 'fa-layer-group',        cls: 'bg-purple-50 text-purple-600 border-purple-200' },
+  '環境控制': { icon: 'fa-temperature-half',   cls: 'bg-rose-50 text-rose-600 border-rose-200' }
+};
+
+function splitTags(str) {
+  return (str || '').toString().split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function renderTypeBadges(str) {
+  const tags = splitTags(str);
+  if (tags.length === 0) return '<span class="text-gray-300 text-xs">—</span>';
+  return tags.map(s => {
+    const m = TYPE_BADGE_MAP[s] || { icon: 'fa-circle-dot', cls: 'bg-gray-50 text-gray-500 border-gray-200' };
+    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${m.cls} mr-1 mb-1"><i class="fas ${m.icon}"></i>${s}</span>`;
+  }).join('');
+}
+
+function renderMagBadges(str) {
+  const tags = splitTags(str);
+  return tags.map(s =>
+    `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono bg-gray-100 text-gray-500 border border-gray-200 mr-1 mb-1">${s}</span>`
+  ).join('');
+}
+
+function wavelengthColorClass(tag) {
+  const t = tag.toUpperCase();
+  if (t.includes('DAPI')) return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (t.includes('FITC') || t.includes('GFP')) return 'bg-green-50 text-green-700 border-green-200';
+  if (t.includes('CY5')) return 'bg-red-50 text-red-700 border-red-200';
+  if (t.includes('RHO') || t.includes('DSRED') || t.includes('A594') || t.includes('TEXA')) return 'bg-orange-50 text-orange-700 border-orange-200';
+  if (t.includes('DIC') || t.includes('PH')) return 'bg-slate-50 text-slate-600 border-slate-200';
+  return 'bg-gray-50 text-gray-600 border-gray-200';
+}
+
+function renderWavelengthBadges(str) {
+  const tags = splitTags(str);
+  if (tags.length === 0) return '<span class="text-gray-300 text-xs">—</span>';
+  return tags.map(s =>
+    `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${wavelengthColorClass(s)} mr-1 mb-1"><i class="fas fa-wave-square"></i>${s}</span>`
+  ).join('');
+}
+
+// ==========================================
 // 明細檢視 / 編輯（點選展開，全部參數皆可查詢與修正）
 // ==========================================
 
@@ -1159,13 +1588,49 @@ function findRecord(rowId) {
   return rows.find(r => r._rowId === rowId);
 }
 
-// 判斷欄位是否為系統欄位（僅顯示不可編輯）
-function isSystemField(key) {
-  return key === '_rowId' || key === '建立時間' || key === '最後修改時間';
+// 把單筆紀錄依「客戶基本資料 / 樣本與影像資訊 / 通道參數 / 服務時數與狀態 / 研究內容 / 系統資訊」
+// 分成區塊，供「查看完整明細」用區塊卡片方式呈現（取代逐列條列，數據不減少）
+function groupRecordFields(record) {
+  const baseKeys = ['服務日期', '單位', '計畫主持人', '服務使用人', '資料夾名稱'];
+  const statusKeys = ['樣本片數', '樣本數', '拍照位點數', '對焦策略', '收費時數', '非收費時數', '服務人次', '服務狀況'];
+  const noteKeys = ['研究內容'];
+  const sysKeys = ['建立時間', '最後修改時間'];
+
+  const groups = { base: [], image: [], channels: {}, status: [], note: [], sys: [] };
+
+  Object.entries(record).forEach(([k, v]) => {
+    if (k === '_rowId') return;
+    const chMatch = k.match(/^Ch(\d+)_(.+)$/);
+    if (chMatch) {
+      const n = chMatch[1];
+      if (!groups.channels[n]) groups.channels[n] = [];
+      groups.channels[n].push({ label: chMatch[2], value: v });
+      return;
+    }
+    if (baseKeys.includes(k)) { groups.base.push({ label: k, value: v }); return; }
+    if (statusKeys.includes(k)) { groups.status.push({ label: k, value: v }); return; }
+    if (noteKeys.includes(k)) { groups.note.push({ label: k, value: v }); return; }
+    if (sysKeys.includes(k)) { groups.sys.push({ label: k, value: v }); return; }
+    groups.image.push({ label: k, value: v });
+  });
+  return groups;
 }
-// 內容較長、適合用多行文字框編輯的欄位
-function isLongTextField(key) {
-  return ['研究內容', '服務狀況', '詳細條件', '影像類型'].includes(key);
+
+function fieldCardHTML(label, value) {
+  const shown = (value === '' || value === undefined || value === null) ? '<span class="text-gray-300">—</span>' : String(value);
+  return `
+    <div class="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100">
+      <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">${label}</div>
+      <div class="text-sm text-gray-800 break-words">${shown}</div>
+    </div>`;
+}
+
+function detailSectionHTML(title, icon, innerHTML) {
+  return `
+    <div class="mb-4">
+      <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas ${icon}"></i>${title}</div>
+      ${innerHTML}
+    </div>`;
 }
 
 function openDetailModal(rowId) {
@@ -1173,15 +1638,43 @@ function openDetailModal(rowId) {
   if (!record) { showToast('找不到該筆紀錄，請重新同步試算表', 'error'); return; }
   activeDetailRecord = record;
 
-  const body = document.getElementById('detail-modal-body');
-  body.innerHTML = Object.entries(record)
-    .filter(([k]) => k !== '_rowId')
-    .map(([k, v]) => `
-      <div class="field-row">
-        <div class="field-label">${k}</div>
-        <div class="field-value">${(v === '' || v === undefined || v === null) ? '<span class="text-gray-300">—</span>' : String(v)}</div>
-      </div>
-    `).join('');
+  const g = groupRecordFields(record);
+  let html = '';
+
+  if (g.base.length) {
+    html += detailSectionHTML('客戶基本資料', 'fa-id-card',
+      `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${g.base.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
+  }
+  if (g.image.length) {
+    html += detailSectionHTML('樣本與影像資訊', 'fa-vial',
+      `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${g.image.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
+  }
+  const chNums = Object.keys(g.channels)
+    .filter(n => g.channels[n].some(f => f.value !== '' && f.value !== undefined && f.value !== null))
+    .sort((a, b) => a - b);
+  if (chNums.length) {
+    const chBlocks = chNums.map(n => `
+      <div class="border border-gray-200 rounded-lg p-2.5 bg-white">
+        <div class="text-[11px] font-bold text-morandi-sidebar mb-1.5"><i class="fas fa-circle-dot mr-1"></i>Channel ${n}</div>
+        <div class="grid grid-cols-2 gap-1.5">${g.channels[n].map(f => fieldCardHTML(f.label, f.value)).join('')}</div>
+      </div>`).join('');
+    html += detailSectionHTML('通道參數', 'fa-layer-group',
+      `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${chBlocks}</div>`);
+  }
+  if (g.status.length) {
+    html += detailSectionHTML('服務時數與狀態', 'fa-clock',
+      `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${g.status.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
+  }
+  if (g.note.length) {
+    html += detailSectionHTML('研究內容', 'fa-flask',
+      `<div class="grid grid-cols-1 gap-2">${g.note.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
+  }
+  if (g.sys.length) {
+    html += detailSectionHTML('系統資訊', 'fa-clock-rotate-left',
+      `<div class="grid grid-cols-2 gap-2">${g.sys.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
+  }
+
+  document.getElementById('detail-modal-body').innerHTML = html;
 
   document.getElementById('detail-to-edit-btn').onclick = () => {
     closeModal('detail-modal');
@@ -1191,43 +1684,16 @@ function openDetailModal(rowId) {
   document.getElementById('detail-modal').classList.add('open');
 }
 
+// 編輯視窗：重建與「新增服務紀錄」完全相同的欄位型態（勾選/鍵入/下拉皆維持原樣），
+// 並用該筆紀錄的資料回填，避免手動逐欄位輸入造成資料型態與前台不一致的問題。
 function openEditModal(rowId) {
   const record = findRecord(rowId);
   if (!record) { showToast('找不到該筆紀錄，請重新同步試算表', 'error'); return; }
   activeDetailRecord = record;
 
-  const body = document.getElementById('edit-modal-body');
-  body.innerHTML = Object.entries(record)
-    .filter(([k]) => k !== '_rowId')
-    .map(([k, v]) => {
-      const safeVal = (v === undefined || v === null) ? '' : String(v);
-      if (isSystemField(k)) {
-        return `
-          <div class="field-row">
-            <div class="field-label">${k}</div>
-            <div class="field-value"><input type="text" value="${safeVal.replace(/"/g,'&quot;')}" disabled data-key="${k}" class="edit-field"></div>
-          </div>`;
-      }
-      if (k === '服務日期') {
-        return `
-          <div class="field-row">
-            <div class="field-label">${k}</div>
-            <div class="field-value"><input type="date" value="${safeVal}" data-key="${k}" class="edit-field"></div>
-          </div>`;
-      }
-      if (isLongTextField(k)) {
-        return `
-          <div class="field-row">
-            <div class="field-label">${k}</div>
-            <div class="field-value"><textarea rows="2" data-key="${k}" class="edit-field">${safeVal}</textarea></div>
-          </div>`;
-      }
-      return `
-        <div class="field-row">
-          <div class="field-label">${k}</div>
-          <div class="field-value"><input type="text" value="${safeVal.replace(/"/g,'&quot;')}" data-key="${k}" class="edit-field"></div>
-        </div>`;
-    }).join('');
+  const instCode = INST_SHORT[currentInstrument];
+  document.getElementById('edit-modal-body').innerHTML = buildEditFormHTML(instCode);
+  populateEditForm(instCode, record);
 
   document.getElementById('edit-modal').classList.add('open');
 }
@@ -1236,14 +1702,12 @@ async function saveEdit() {
   if (!activeDetailRecord) return;
   const record = activeDetailRecord;
   const rowId = record._rowId;
+  const instCode = INST_SHORT[currentInstrument];
+  const domPrefix = `edit-${instCode}`;
 
-  // 依照原本欄位（headers）順序，組出要寫回試算表的一整列數值
-  const headerOrder = Object.keys(record).filter(k => k !== '_rowId');
-  const inputs = document.querySelectorAll('#edit-modal-body .edit-field');
-  const valueMap = {};
-  inputs.forEach(inp => { valueMap[inp.dataset.key] = inp.value; });
-
-  const values = headerOrder.map(h => valueMap[h] !== undefined ? valueMap[h] : '');
+  // 用與「新增表單」相同的邏輯讀取編輯視窗內容，再依欄位順序組成要寫回的整列陣列
+  const structured = buildPayloadData(currentInstrument, domPrefix);
+  const values = buildRowDataArray(currentInstrument, structured);
 
   const saveBtn = document.getElementById('edit-save-btn');
   const originText = saveBtn.innerHTML;
