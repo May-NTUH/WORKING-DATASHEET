@@ -197,7 +197,7 @@ tailwind.config = {
 
   <!-- 資料即時同步狀態 -->
   <div class="p-3 border-t border-white/10">
-    <button onclick="fetchAllData(true)" class="w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
+    <button onclick="manualSync()" class="w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
       <i id="sync-icon" class="fas fa-arrows-rotate"></i> 重新載入 / 同步試算表
     </button>
     <div id="sync-time" class="text-[10px] text-white/40 text-center mt-1.5">尚未載入資料</div>
@@ -639,7 +639,7 @@ tailwind.config = {
         </div>
         <div class="relative w-full md:w-72">
           <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
-          <input type="text" id="dash-search-input" oninput="renderCurrentDashboard()" placeholder="搜尋使用人 / 主持人 / 單位..." class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
+          <input type="text" id="dash-search-input" oninput="handleSearchInput()" placeholder="搜尋使用人 / 主持人 / 單位...（自動跨年度搜尋）" class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
         </div>
       </div>
 
@@ -1041,7 +1041,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  fetchAllData();
+  // 一開始不主動載入任何後台資料，等使用者實際切換到某台儀器的「後台彙整」頁籤時，
+  // 才會依儀器分開請求資料（見 switchView），減少不必要的讀取與等待時間。
 });
 
 function switchView(instCode, viewType) {
@@ -1059,8 +1060,14 @@ function switchView(instCode, viewType) {
   } else {
     document.getElementById('view-dashboard').classList.add('active');
     updateDashboardHeader();
-    populateYearFilter();
-    renderCurrentDashboard();
+    if (!instrumentLoaded[currentInstrument]) {
+      // 這台儀器在本次瀏覽階段還沒讀過資料，去後端拿（優先命中 GAS 端快取，速度較快）
+      loadInstrumentData(currentInstrument, false);
+    } else {
+      // 已經讀過，直接用記憶體中的資料重新渲染，不用再打一次 API
+      populateYearFilter();
+      renderCurrentDashboard();
+    }
   }
 }
 
@@ -1189,7 +1196,12 @@ function closeModal(id) {
 // API 通訊：讀取與寫入 Google Sheets
 // ==========================================
 
-async function fetchAllData(isManual = false) {
+// 各儀器是否已在本次瀏覽階段載入過資料（切換頁籤時用來判斷要不要重新打 API）
+let instrumentLoaded = { TissueFAXS: false, AxioObserver: false, LSM880: false };
+
+// 讀取「單一儀器」的資料（對應優化建議 4：依儀器分開讀取，切換頁籤才請求該儀器資料）
+// forceRefresh = true 時會加上 nocache=1，繞過後端 GAS 快取，強制重新讀取試算表最新內容
+async function loadInstrumentData(instName, forceRefresh) {
   const syncIcon = document.getElementById('sync-icon');
   const syncTime = document.getElementById('sync-time');
   if (syncIcon) syncIcon.classList.add('fa-spin');
@@ -1201,24 +1213,34 @@ async function fetchAllData(isManual = false) {
   }
 
   try {
-    const res = await fetch(GAS_API_URL);
+    const url = `${GAS_API_URL}?instrument=${encodeURIComponent(instName)}${forceRefresh ? '&nocache=1' : ''}`;
+    const res = await fetch(url);
     const result = await res.json();
     if (result.status === 'success') {
-      labData = result.data;
+      labData[instName] = (result.data && result.data[instName]) || [];
+      instrumentLoaded[instName] = true;
       const now = new Date().toLocaleTimeString();
       syncTime.innerText = `已同步: ${now}`;
-      if (isManual) showToast('試算表資料同步成功！', 'success');
-      renderCurrentDashboard();
+      if (forceRefresh) showToast('資料已重新整理！', 'success');
+      if (currentInstrument === instName) {
+        populateYearFilter();
+        renderCurrentDashboard();
+      }
     } else {
-      if (isManual) showToast('同步失敗：' + (result.message || '未知錯誤'), 'error');
+      showToast('讀取失敗：' + (result.message || '未知錯誤'), 'error');
     }
   } catch (err) {
     console.error("Fetch error:", err);
     syncTime.innerText = "同步失敗";
-    if (isManual) showToast('同步失敗，請檢查連線！', 'error');
+    showToast('讀取失敗，請檢查連線！', 'error');
   } finally {
     if (syncIcon) syncIcon.classList.remove('fa-spin');
   }
+}
+
+// 側邊欄「重新載入 / 同步試算表」按鈕：強制重新整理「目前所在儀器」的資料
+function manualSync() {
+  loadInstrumentData(currentInstrument, true);
 }
 
 // 依目前表單內容組成 payload.data（新增用）
@@ -1401,7 +1423,9 @@ async function handleFormSubmit(event, instName) {
     document.querySelectorAll(`#${event.target.id} input[type="date"]`).forEach(inp => {
       inp.value = new Date().toISOString().split('T')[0];
     });
-    fetchAllData();
+    // 新增成功後，標記該儀器的資料為「未載入」，下次切換到它的後台頁籤時會自動重新抓取最新資料
+    // （後端也已經在寫入成功時清除了該儀器的快取，所以下次讀取一定拿得到這筆新資料）
+    instrumentLoaded[instName] = false;
   } catch (err) {
     showToast('儲存失敗，請檢查連線！', 'error');
     console.error(err);
@@ -1425,6 +1449,10 @@ function updateDashboardHeader() {
   document.getElementById('dash-inst-subtitle').innerText = titles[currentInstrument].sub;
 }
 
+// 記錄每台儀器的年份篩選是否已經設定過預設值，避免使用者手動選了「全部年份」之後，
+// 下次切換頁籤又被強制跳回今年
+let yearFilterInitialized = { TissueFAXS: false, AxioObserver: false, LSM880: false };
+
 function populateYearFilter() {
   const rows = labData[currentInstrument] || [];
   const years = new Set();
@@ -1443,9 +1471,30 @@ function populateYearFilter() {
     opt.innerText = `${y} 年`;
     select.appendChild(opt);
   });
-  if (Array.from(years).includes(currentVal)) {
+
+  const thisYear = new Date().getFullYear().toString();
+
+  if (!yearFilterInitialized[currentInstrument]) {
+    // 第一次瀏覽這台儀器的後台：優化建議 2 — 預設只顯示「今年」，減少一次要處理/渲染的資料量
+    if (years.has(thisYear)) {
+      select.value = thisYear;
+    }
+    yearFilterInitialized[currentInstrument] = true;
+  } else if (Array.from(years).includes(currentVal)) {
+    // 之後再次切換回來：尊重使用者原本選擇的年份
     select.value = currentVal;
   }
+}
+
+// 搜尋框有輸入內容時，自動把年份篩選切到「全部年份」，確保跨年度也搜得到
+// （避免使用者忘記手動切換年份，導致其他年度的資料被年份篩選擋掉而顯示「找不到」）
+function handleSearchInput() {
+  const keyword = document.getElementById('dash-search-input').value.trim();
+  const yearSelect = document.getElementById('dash-year-filter');
+  if (keyword && yearSelect.value !== 'ALL') {
+    yearSelect.value = 'ALL';
+  }
+  renderCurrentDashboard();
 }
 
 function renderCurrentDashboard() {
@@ -1728,9 +1777,10 @@ async function saveEdit() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    showToast('紀錄已更新，正在重新同步試算表...', 'success');
+    showToast('紀錄已更新，正在重新整理資料...', 'success');
     closeModal('edit-modal');
-    await fetchAllData();
+    // 編輯的一定是「目前正在檢視」的儀器，直接強制重新讀取該儀器（繞過快取拿最新資料）
+    await loadInstrumentData(currentInstrument, true);
   } catch (err) {
     console.error(err);
     showToast('更新失敗，請檢查連線！', 'error');
@@ -1742,3 +1792,4 @@ async function saveEdit() {
 </script>
 </body>
 </html>
+
