@@ -1667,20 +1667,40 @@ function findRecord(rowId) {
   return rows.find(r => r._rowId === rowId);
 }
 
-// 把單筆紀錄依「客戶基本資料 / 樣本與影像資訊 / 通道參數 / 服務時數與狀態 / 研究內容 / 系統資訊」
-// 分成區塊，供「查看完整明細」用區塊卡片方式呈現（取代逐列條列，數據不減少）
+// 把單筆紀錄依「客戶基本資料 / 樣本與影像資訊 / 通道參數 / 可見光拍攝參數 /
+// 服務時數與狀態 / 研究內容 / 系統資訊」分成區塊，供「查看完整明細」用區塊卡片方式呈現
+// （取代逐列條列，數據不減少）。
+// TissueFAXS 會依該筆紀錄實際的「影像類型」（螢光 / 可見光）只顯示真正適用的欄位，
+// 避免螢光專屬（光源波長、通道參數）跟可見光專屬（Condensor/燈源亮度/曝光時間）混在一起顯示。
 function groupRecordFields(record) {
   const baseKeys = ['服務日期', '單位', '計畫主持人', '服務使用人', '資料夾名稱'];
   const statusKeys = ['樣本片數', '樣本數', '拍照位點數', '對焦策略', '收費時數', '非收費時數', '服務人次', '服務狀況'];
   const noteKeys = ['研究內容'];
   const sysKeys = ['建立時間', '最後修改時間'];
+  const bfKeys = ['可見光_Condensor數值', '可見光_燈源亮度', '可見光_曝光時間'];
+  const flOnlyKeys = ['光源波長']; // TissueFAXS 專屬：只有螢光模式才適用
 
-  const groups = { base: [], image: [], channels: {}, status: [], note: [], sys: [] };
+  const isTF = currentInstrument === 'TissueFAXS';
+  const isBrightfield = isTF && record['影像類型'] === '可見光';
+
+  const groups = { base: [], image: [], channels: {}, bf: [], status: [], note: [], sys: [] };
 
   Object.entries(record).forEach(([k, v]) => {
     if (k === '_rowId') return;
+
+    if (isTF) {
+      if (bfKeys.includes(k)) {
+        if (isBrightfield) groups.bf.push({ label: k, value: v });
+        return; // 螢光模式：完全不顯示可見光專屬欄位，避免混雜
+      }
+      if (isBrightfield && flOnlyKeys.includes(k)) {
+        return; // 可見光模式：不顯示螢光專屬的光源波長欄位
+      }
+    }
+
     const chMatch = k.match(/^Ch(\d+)_(.+)$/);
     if (chMatch) {
+      if (isBrightfield) return; // 可見光模式沒有通道參數，略過
       const n = chMatch[1];
       if (!groups.channels[n]) groups.channels[n] = [];
       groups.channels[n].push({ label: chMatch[2], value: v });
@@ -1739,6 +1759,10 @@ function openDetailModal(rowId) {
       </div>`).join('');
     html += detailSectionHTML('通道參數', 'fa-layer-group',
       `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${chBlocks}</div>`);
+  }
+  if (g.bf.length) {
+    html += detailSectionHTML('可見光拍攝參數', 'fa-lightbulb',
+      `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">${g.bf.map(f => fieldCardHTML(f.label, f.value)).join('')}</div>`);
   }
   if (g.status.length) {
     html += detailSectionHTML('服務時數與狀態', 'fa-clock',
