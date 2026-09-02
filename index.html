@@ -594,7 +594,7 @@ tailwind.config = {
       </div>
 
       <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
-        <span class="text-xs font-bold text-gray-500 whitespace-nowrap shrink-0"><i class="fas fa-calendar-alt mr-1"></i>年份:</span>
+        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
         <select id="dash-year-filter" onchange="renderCurrentDashboard()" class="text-xs font-semibold bg-transparent border-0 p-1 focus:ring-0 cursor-pointer">
           <option value="ALL">全部年份 (歷年總計)</option>
         </select>
@@ -791,6 +791,16 @@ function toggleWavelengthVisibility(prefix, imageType) {
   if (el) el.style.display = (imageType === '螢光') ? 'block' : 'none';
 }
 
+// 編輯視窗專用：TissueFAXS 切換「螢光 / 可見光」時，同步顯示對應的參數區塊
+// （螢光→波長+通道參數；可見光→Condensor/燈源亮度/曝光時間），與新增表單行為一致
+function toggleTfSections(prefix, imageType) {
+  const isFluo = imageType === '螢光';
+  const flBlock = document.getElementById(`${prefix}-fl-params-block`);
+  const bfBlock = document.getElementById(`${prefix}-bf-params-block`);
+  if (flBlock) flBlock.style.display = isFluo ? 'block' : 'none';
+  if (bfBlock) bfBlock.classList.toggle('hidden', isFluo);
+}
+
 // ==========================================
 // 編輯視窗：表單區塊產生器（結構與新增表單完全對應，
 // 勾選欄位維持勾選、鍵入欄位維持鍵入，避免資料錯亂）
@@ -844,23 +854,36 @@ function tfImageBlockHTML(p) {
       <div class="mb-3">
         <label class="form-label text-xs">影像類型</label>
         <div class="flex gap-3">
-          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="螢光" onchange="toggleWavelengthVisibility('${p}', this.value)"><span><i class="fas fa-sun mr-1 text-xs"></i>螢光</span></label>
-          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="可見光" onchange="toggleWavelengthVisibility('${p}', this.value)"><span><i class="fas fa-lightbulb mr-1 text-xs"></i>可見光</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="螢光" onchange="toggleTfSections('${p}', this.value)"><span><i class="fas fa-sun mr-1 text-xs"></i>螢光</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-imageType" value="可見光" onchange="toggleTfSections('${p}', this.value)"><span><i class="fas fa-lightbulb mr-1 text-xs"></i>可見光</span></label>
         </div>
       </div>
       <div class="mb-3">
         <label class="form-label text-xs">物鏡倍率 (可複選)</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.tf.mag)}</div>
       </div>
-      <div id="${p}-wavelength-container" class="mb-3">
-        <label class="form-label text-xs">光源波長 (可複選)</label>
-        <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.tf.wavelength)}</div>
+
+      <div id="${p}-fl-params-block">
+        <div id="${p}-wavelength-container" class="mb-3">
+          <label class="form-label text-xs">光源波長 (可複選)</label>
+          <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.tf.wavelength)}</div>
+        </div>
+        <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+          <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立螢光通道參數</label>
+          <div id="${p}-channels-list" class="space-y-2"></div>
+          <button type="button" onclick="addFluoChannel('tf','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
+        </div>
       </div>
-      <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
-        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立螢光通道參數</label>
-        <div id="${p}-channels-list" class="space-y-2"></div>
-        <button type="button" onclick="addFluoChannel('tf','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
+
+      <div id="${p}-bf-params-block" class="hidden p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">可見光拍攝參數</label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div><label class="form-label text-xs">Condensor 數值</label><input type="text" id="${p}-bf-cond" placeholder="例: 0.55"></div>
+          <div><label class="form-label text-xs">燈源亮度 (%)</label><input type="text" id="${p}-bf-light" placeholder="例: 80%"></div>
+          <div><label class="form-label text-xs">曝光時間 (ms)</label><input type="text" id="${p}-bf-exp" placeholder="例: 15ms"></div>
+        </div>
       </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label class="form-label text-xs">樣本片數</label><input type="number" id="${p}-slides" min="0"></div>
         <div><label class="form-label text-xs">染色樣態備註</label><input type="text" id="${p}-staining"></div>
@@ -974,10 +997,13 @@ function populateEditForm(instCode, record) {
     const imgType = record['影像類型'] === '可見光' ? '可見光' : '螢光';
     const radio = document.querySelector(`input[name="${p}-imageType"][value="${imgType}"]`);
     if (radio) radio.checked = true;
-    toggleWavelengthVisibility(p, imgType);
+    toggleTfSections(p, imgType);
     checkPillValues(`${p}-mag`, record['物鏡倍率']);
     checkPillValues(`${p}-wavelength`, record['光源波長']);
     fillChannelsFromRecord('tf', p, record);
+    setVal(`${p}-bf-cond`, record['可見光_Condensor數值']);
+    setVal(`${p}-bf-light`, record['可見光_燈源亮度']);
+    setVal(`${p}-bf-exp`, record['可見光_曝光時間']);
     setVal(`${p}-slides`, record['樣本片數']);
     setVal(`${p}-staining`, record['染色樣態備註']);
   } else if (instCode === 'axio') {
@@ -1262,6 +1288,9 @@ function buildPayloadData(instName, domPrefix) {
       wavelength: getCheckedValues(`${p}-wavelength`),
       staining: document.getElementById(`${p}-staining`).value,
       channels: collectChannelsArray('tf', p),
+      bfCondensor: document.getElementById(`${p}-bf-cond`)?.value || '',
+      bfLight: document.getElementById(`${p}-bf-light`)?.value || '',
+      bfExp: document.getElementById(`${p}-bf-exp`)?.value || '',
       slides: document.getElementById(`${p}-slides`).value,
       chargedHours: document.getElementById(`${p}-charged`).value,
       nonChargedHours: document.getElementById(`${p}-nonCharged`).value,
@@ -1357,7 +1386,8 @@ function buildRowDataArray(instName, record) {
       getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'), getChVal(3,'thresh'),
       record.slides || 0, record.chargedHours || 0, record.nonChargedHours || 0,
       record.serviceCount || 1, record.status || "", record.notes || "",
-      "", ""
+      "", "",
+      record.bfCondensor || "", record.bfLight || "", record.bfExp || ""
     ];
   } else if (instName === 'AxioObserver') {
     return [
@@ -1792,4 +1822,3 @@ async function saveEdit() {
 </script>
 </body>
 </html>
-
