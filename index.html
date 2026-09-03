@@ -264,19 +264,19 @@ tailwind.config = {
         </div>
 
         <div id="tf-staining-container" class="hidden mb-4">
-          <label class="form-label">染色樣態</label>
+          <label class="form-label">染色樣態 (可複選)</label>
           <div class="flex flex-wrap items-center gap-2">
-            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf', this.value)"><span>H&E</span></label>
-            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf', this.value)"><span>DAB</span></label>
-            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf', this.value)"><span>PAS</span></label>
-            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf', this.value)"><span>MTS</span></label>
-            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf', this.value)"><span>其他</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf')"><span>H&E</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf')"><span>DAB</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf')"><span>PAS</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf')"><span>MTS</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf')"><span>其他</span></label>
             <input type="text" id="tf-staining-other" class="hidden staining-other-input" placeholder="請輸入">
           </div>
         </div>
 
         <div id="tf-wavelength-container" class="mb-4">
-          <label class="form-label">光源波長</label>
+          <label class="form-label">光源波長 (螢光專用，可複選)</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mDAPI"><span>mDAPI</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mFITC"><span>mFITC</span></label>
@@ -544,10 +544,11 @@ tailwind.config = {
         <!-- 掃描參數（新增） -->
         <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
           <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-3"><i class="fas fa-sliders mr-1"></i> 掃描參數</label>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div><label class="form-label text-[11px]">Frame Size</label><input type="text" id="lsm-frameSize" placeholder="例: 1024x1024"></div>
             <div><label class="form-label text-[11px]">Speed</label><input type="text" id="lsm-scanSpeed" placeholder="例: 7"></div>
             <div><label class="form-label text-[11px]">Average Number</label><input type="text" id="lsm-avgNumber" placeholder="例: 2"></div>
+            <div><label class="form-label text-[11px]">Zoom</label><input type="text" id="lsm-zoom" placeholder="例: 1.0"></div>
             <div>
               <label class="form-label text-[11px]">Method</label>
               <select id="lsm-method">
@@ -806,11 +807,12 @@ function toggleWavelengthVisibility(prefix, imageType) {
   if (el) el.style.display = (imageType === '螢光') ? 'block' : 'none';
 }
 
-// 染色樣態選「其他」時，才顯示旁邊的自訂輸入框（平常收起來，版面更清爽）
-function toggleStainingOther(domPrefix, value) {
+// 染色樣態現在是可複選的勾選組：只有「其他」被勾選時，才顯示旁邊的自訂輸入框
+function toggleStainingOther(domPrefix) {
+  const otherCheckbox = document.querySelector(`input[name="${domPrefix}-stainingType"][value="其他"]`);
   const otherInput = document.getElementById(`${domPrefix}-staining-other`);
-  if (!otherInput) return;
-  if (value === '其他') {
+  if (!otherCheckbox || !otherInput) return;
+  if (otherCheckbox.checked) {
     otherInput.classList.remove('hidden');
     otherInput.focus();
   } else {
@@ -818,36 +820,42 @@ function toggleStainingOther(domPrefix, value) {
   }
 }
 
-// 讀取「染色樣態」目前選取的值：選了固定選項就回傳該選項文字；
-// 選「其他」則回傳旁邊文字框輸入的內容（沒填就回傳「其他」）
-function getStainingTypeValue(domPrefix) {
-  const selected = document.querySelector(`input[name="${domPrefix}-stainingType"]:checked`);
-  if (!selected) return '';
-  if (selected.value === '其他') {
-    const otherInput = document.getElementById(`${domPrefix}-staining-other`);
-    const otherVal = (otherInput?.value || '').trim();
-    return otherVal || '其他';
-  }
-  return selected.value;
+// 讀取「染色樣態」目前勾選的所有值，組成逗號分隔字串：
+// 固定選項照勾選文字回傳；勾了「其他」則用旁邊文字框的內容取代（沒填就回傳「其他」）
+function getStainingTypesValue(domPrefix) {
+  const checked = Array.from(document.querySelectorAll(`input[name="${domPrefix}-stainingType"]:checked`)).map(el => el.value);
+  if (checked.length === 0) return '';
+  const otherInput = document.getElementById(`${domPrefix}-staining-other`);
+  const otherVal = (otherInput?.value || '').trim();
+  const finalValues = checked.map(v => v === '其他' ? (otherVal || '其他') : v);
+  return finalValues.join(', ');
 }
 
-// 依既有紀錄的「染色樣態」值，還原勾選狀態：符合固定選項就選該選項；
-// 不符合（自訂文字）就選「其他」並把值填回文字框
-function populateStainingType(domPrefix, value) {
+// 依既有紀錄的「染色樣態」值（逗號分隔字串），還原多選勾選狀態：
+// 符合固定選項的就勾起來；不符合的（自訂文字）就勾「其他」並把值填回文字框
+function populateStainingTypes(domPrefix, value) {
   const known = ['H&E', 'DAB', 'PAS', 'MTS'];
-  document.querySelectorAll(`input[name="${domPrefix}-stainingType"]`).forEach(r => { r.checked = false; });
+  document.querySelectorAll(`input[name="${domPrefix}-stainingType"]`).forEach(cb => { cb.checked = false; });
   const otherInput = document.getElementById(`${domPrefix}-staining-other`);
   if (otherInput) otherInput.value = '';
-  toggleStainingOther(domPrefix, ''); // 預設收起「其他」輸入框
+  toggleStainingOther(domPrefix); // 預設收起「其他」輸入框
   if (!value) return;
-  if (known.includes(value)) {
-    const radio = document.querySelector(`input[name="${domPrefix}-stainingType"][value="${value}"]`);
-    if (radio) radio.checked = true;
-  } else {
-    const radio = document.querySelector(`input[name="${domPrefix}-stainingType"][value="其他"]`);
-    if (radio) radio.checked = true;
-    if (otherInput) otherInput.value = value;
-    toggleStainingOther(domPrefix, '其他');
+
+  const tokens = value.toString().split(',').map(s => s.trim()).filter(Boolean);
+  const otherTokens = [];
+  tokens.forEach(t => {
+    if (known.includes(t)) {
+      const cb = document.querySelector(`input[name="${domPrefix}-stainingType"][value="${t}"]`);
+      if (cb) cb.checked = true;
+    } else {
+      otherTokens.push(t);
+    }
+  });
+  if (otherTokens.length > 0) {
+    const otherCb = document.querySelector(`input[name="${domPrefix}-stainingType"][value="其他"]`);
+    if (otherCb) otherCb.checked = true;
+    if (otherInput) otherInput.value = otherTokens.join(', ');
+    toggleStainingOther(domPrefix);
   }
 }
 
@@ -926,13 +934,13 @@ function tfImageBlockHTML(p) {
       </div>
 
       <div id="${p}-staining-container" class="hidden mb-3">
-        <label class="form-label text-xs">染色樣態</label>
+        <label class="form-label text-xs">染色樣態 (可複選)</label>
         <div class="flex flex-wrap items-center gap-2">
-          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="H&E" onchange="toggleStainingOther('${p}', this.value)"><span>H&E</span></label>
-          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="DAB" onchange="toggleStainingOther('${p}', this.value)"><span>DAB</span></label>
-          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="PAS" onchange="toggleStainingOther('${p}', this.value)"><span>PAS</span></label>
-          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="MTS" onchange="toggleStainingOther('${p}', this.value)"><span>MTS</span></label>
-          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="其他" onchange="toggleStainingOther('${p}', this.value)"><span>其他</span></label>
+          <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="H&E" onchange="toggleStainingOther('${p}')"><span>H&E</span></label>
+          <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="DAB" onchange="toggleStainingOther('${p}')"><span>DAB</span></label>
+          <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="PAS" onchange="toggleStainingOther('${p}')"><span>PAS</span></label>
+          <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="MTS" onchange="toggleStainingOther('${p}')"><span>MTS</span></label>
+          <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="其他" onchange="toggleStainingOther('${p}')"><span>其他</span></label>
           <input type="text" id="${p}-staining-other" class="hidden staining-other-input" placeholder="請輸入">
         </div>
       </div>
@@ -1034,10 +1042,11 @@ function lsmImageBlockHTML(p) {
       </div>
       <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
         <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">掃描參數</label>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
           <div><label class="form-label text-[11px]">Frame Size</label><input type="text" id="${p}-frameSize"></div>
           <div><label class="form-label text-[11px]">Speed</label><input type="text" id="${p}-scanSpeed"></div>
           <div><label class="form-label text-[11px]">Average Number</label><input type="text" id="${p}-avgNumber"></div>
+          <div><label class="form-label text-[11px]">Zoom</label><input type="text" id="${p}-zoom"></div>
           <div><label class="form-label text-[11px]">Method</label>
             <select id="${p}-method"><option value="">未指定</option><option value="Mean">Mean</option><option value="Sum">Sum</option></select>
           </div>
@@ -1074,7 +1083,7 @@ function populateEditForm(instCode, record) {
     toggleTfSections(p, imgType);
     checkPillValues(`${p}-mag`, record['物鏡倍率']);
     checkPillValues(`${p}-wavelength`, record['光源波長']);
-    populateStainingType(p, record['染色樣態']);
+    populateStainingTypes(p, record['染色樣態']);
     fillChannelsFromRecord('tf', p, record);
     setVal(`${p}-bf-cond`, record['可見光_Condensor數值']);
     setVal(`${p}-bf-light`, record['可見光_燈源亮度']);
@@ -1110,6 +1119,7 @@ function populateEditForm(instCode, record) {
     setVal(`${p}-frameSize`, record['Frame Size']);
     setVal(`${p}-scanSpeed`, record['Scan Speed']);
     setVal(`${p}-avgNumber`, record['Average Number']);
+    setVal(`${p}-zoom`, record['Zoom']);
     setVal(`${p}-method`, record['Method']);
     fillChannelsFromRecord('lsm', p, record);
   }
@@ -1362,7 +1372,7 @@ function buildPayloadData(instName, domPrefix) {
       imageType: document.querySelector(`input[name="${p}-imageType"]:checked`).value,
       mag: getCheckedValues(`${p}-mag`),
       wavelength: getCheckedValues(`${p}-wavelength`),
-      stainingType: getStainingTypeValue(p),
+      stainingType: getStainingTypesValue(p),
       staining: document.getElementById(`${p}-staining`).value,
       channels: collectChannelsArray('tf', p),
       bfCondensor: document.getElementById(`${p}-bf-cond`)?.value || '',
@@ -1434,6 +1444,7 @@ function buildPayloadData(instName, domPrefix) {
       frameSize: document.getElementById(`${p}-frameSize`).value,
       scanSpeed: document.getElementById(`${p}-scanSpeed`).value,
       avgNumber: document.getElementById(`${p}-avgNumber`).value,
+      zoom: document.getElementById(`${p}-zoom`).value,
       method: document.getElementById(`${p}-method`).value,
       channels: collectChannelsArray('lsm', p),
       chargedHours: document.getElementById(`${p}-charged`).value,
@@ -1443,64 +1454,6 @@ function buildPayloadData(instName, domPrefix) {
       notes: document.getElementById(`${p}-notes`).value
     };
   }
-}
-
-// 依 instName 對照 Google Sheet 欄位順序，組出寫入用的一整列陣列
-// （與 code.js 的 handleInsert 完全一致，供「編輯」功能覆寫既有列使用）
-function buildRowDataArray(instName, record) {
-  const ch = record.channels || [];
-  const getChVal = (idx, key) => (ch[idx] && ch[idx][key]) ? ch[idx][key] : "";
-
-  if (instName === 'TissueFAXS') {
-    return [
-      record.date || "", record.unit || "", record.pi || "", record.user || "",
-      record.folder || "", record.imageType || "",
-      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
-      record.staining || "",
-      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'), getChVal(0,'thresh'),
-      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'), getChVal(1,'thresh'),
-      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'), getChVal(2,'thresh'),
-      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'), getChVal(3,'thresh'),
-      record.slides || 0, record.chargedHours || 0, record.nonChargedHours || 0,
-      record.serviceCount || 1, record.status || "", record.notes || "",
-      "", "",
-      record.bfCondensor || "", record.bfLight || "", record.bfExp || "",
-      record.stainingType || ""
-    ];
-  } else if (instName === 'AxioObserver') {
-    return [
-      record.date || "", record.unit || "", record.pi || "", record.user || "",
-      record.folder || "", (record.shootType || []).join(", "), record.detailConditions || "",
-      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
-      record.carrier || "", record.sampleContent || "",
-      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'),
-      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'),
-      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'),
-      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'),
-      getChVal(4,'type'), getChVal(4,'light'), getChVal(4,'exp'),
-      record.slides || 0, record.positions || 0, record.focus || "",
-      record.chargedHours || 0, record.nonChargedHours || 0,
-      record.serviceCount || 1, record.status || "", record.notes || "",
-      "", ""
-    ];
-  } else if (instName === 'LSM880') {
-    return [
-      record.date || "", record.unit || "", record.pi || "", record.user || "",
-      record.folder || "", (record.shootType || []).join(", "), record.detailConditions || "",
-      (record.mag || []).join(", "), (record.wavelength || []).join(", "),
-      record.carrier || "", record.sampleContent || "",
-      record.frameSize || "", record.scanSpeed || "", record.avgNumber || "", record.method || "",
-      getChVal(0,'type'), getChVal(0,'light'), getChVal(0,'exp'), getChVal(0,'pinhole'),
-      getChVal(1,'type'), getChVal(1,'light'), getChVal(1,'exp'), getChVal(1,'pinhole'),
-      getChVal(2,'type'), getChVal(2,'light'), getChVal(2,'exp'), getChVal(2,'pinhole'),
-      getChVal(3,'type'), getChVal(3,'light'), getChVal(3,'exp'), getChVal(3,'pinhole'),
-      record.slides || 0, record.positions || 0,
-      record.chargedHours || 0, record.nonChargedHours || 0,
-      record.serviceCount || 1, record.status || "", record.notes || "",
-      "", ""
-    ];
-  }
-  return [];
 }
 
 async function handleFormSubmit(event, instName) {
@@ -1910,9 +1863,10 @@ async function saveEdit() {
   const instCode = INST_SHORT[currentInstrument];
   const domPrefix = `edit-${instCode}`;
 
-  // 用與「新增表單」相同的邏輯讀取編輯視窗內容，再依欄位順序組成要寫回的整列陣列
+  // 用與「新增表單」完全相同的邏輯讀取編輯視窗內容，組成結構化資料。
+  // 後端會依欄位標題文字比對寫入正確的儲存格，不用管欄位在 Sheet 上實際排第幾欄，
+  // 也不會動到表單沒有管理的其他欄位（例如手動加在 Sheet 上的備用欄位）。
   const structured = buildPayloadData(currentInstrument, domPrefix);
-  const values = buildRowDataArray(currentInstrument, structured);
 
   const saveBtn = document.getElementById('edit-save-btn');
   const originText = saveBtn.innerHTML;
@@ -1923,7 +1877,7 @@ async function saveEdit() {
     instrument: currentInstrument,
     action: 'update',
     rowId: rowId,
-    values: values
+    data: structured
   };
 
   try {
