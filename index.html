@@ -266,17 +266,17 @@ tailwind.config = {
         <div id="tf-staining-container" class="hidden mb-4">
           <label class="form-label">染色樣態</label>
           <div class="flex flex-wrap items-center gap-2">
-            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf', this.value)"><span>H&E</span></label>
-            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf', this.value)"><span>DAB</span></label>
-            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf', this.value)"><span>PAS</span></label>
-            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf', this.value)"><span>MTS</span></label>
-            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf', this.value)"><span>其他</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf', this.value)"><span>H&E</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf', this.value)"><span>DAB</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf', this.value)"><span>PAS</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf', this.value)"><span>MTS</span></label>
+            <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf', this.value)"><span>其他</span></label>
             <input type="text" id="tf-staining-other" class="hidden staining-other-input" placeholder="請輸入">
           </div>
         </div>
 
         <div id="tf-wavelength-container" class="mb-4">
-          <label class="form-label">光源波長 (螢光專用，可複選)</label>
+          <label class="form-label">光源波長</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mDAPI"><span>mDAPI</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mFITC"><span>mFITC</span></label>
