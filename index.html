@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -86,6 +86,11 @@ tailwind.config = {
   }
   .checkbox-pill:hover span { border-color: #6E7D7A; color: #6E7D7A; }
   .checkbox-pill input:checked + span:hover { background: #5B6966; color: #FFF; }
+
+  /* 染色樣態「其他」選填：沿用全站既有的 pill 選取樣式，只多一個緊湊的自訂輸入框 */
+  .staining-other-input {
+    width: 5rem; padding: 0.35rem 0.6rem !important; font-size: 0.8rem;
+  }
 
   .stat-card { position: relative; overflow: hidden; }
   .stat-card .stat-icon {
@@ -258,6 +263,18 @@ tailwind.config = {
           </div>
         </div>
 
+        <div id="tf-staining-container" class="hidden mb-4">
+          <label class="form-label">染色樣態</label>
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf', this.value)"><span>H&E</span></label>
+            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf', this.value)"><span>DAB</span></label>
+            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf', this.value)"><span>PAS</span></label>
+            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf', this.value)"><span>MTS</span></label>
+            <label class="checkbox-pill"><input type="radio" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf', this.value)"><span>其他</span></label>
+            <input type="text" id="tf-staining-other" class="hidden staining-other-input" placeholder="請輸入">
+          </div>
+        </div>
+
         <div id="tf-wavelength-container" class="mb-4">
           <label class="form-label">光源波長 (螢光專用，可複選)</label>
           <div class="flex flex-wrap gap-2">
@@ -271,21 +288,19 @@ tailwind.config = {
           </div>
         </div>
 
-        <!-- 獨立通道動態設定區 -->
-        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
-          <div class="flex justify-between items-center mb-2">
-            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider"><i class="fas fa-layer-group mr-1"></i> 獨立螢光通道參數 (最多 4 組)</label>
-          </div>
+        <!-- 獨立通道動態設定區（螢光專用） -->
+        <div id="tf-fl-params-block" class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立螢光通道參數 (最多 4 組)</label>
+          <div id="tf-channels-list" class="space-y-2"></div>
+          <button type="button" onclick="addFluoChannel('tf')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
+            <i class="fas fa-plus mr-1"></i> 新增螢光通道 (Channel)
+          </button>
+        </div>
 
-          <div id="tf-fl-params-block">
-            <div id="tf-channels-list" class="space-y-2"></div>
-            <button type="button" onclick="addFluoChannel('tf')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
-              <i class="fas fa-plus mr-1"></i> 新增螢光通道 (Channel)
-            </button>
-          </div>
-
-          <!-- 可見光專用條件 -->
-          <div id="tf-bf-params-block" class="hidden grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- 可見光專用條件 -->
+        <div id="tf-bf-params-block" class="hidden p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2">可見光拍攝參數</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div><label class="form-label text-xs">Condensor 數值</label><input type="text" id="tf-bf-cond" placeholder="例: 0.55"></div>
             <div><label class="form-label text-xs">燈源亮度 (%)</label><input type="text" id="tf-bf-light" placeholder="例: 80%"></div>
             <div><label class="form-label text-xs">曝光時間 (ms)</label><input type="text" id="tf-bf-exp" placeholder="例: 15ms"></div>
@@ -294,7 +309,7 @@ tailwind.config = {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><label class="form-label">樣本片數 (玻片數)</label><input type="number" id="tf-slides" value="1" min="0" required></div>
-          <div><label class="form-label">染色樣態備註</label><input type="text" id="tf-staining" placeholder="例: IHC DAB / H&E / IF 3色"></div>
+          <div><label class="form-label">其他備註</label><input type="text" id="tf-staining" placeholder="例: 特殊處理或其他補充說明"></div>
         </div>
       </div>
 
@@ -594,7 +609,7 @@ tailwind.config = {
       </div>
 
       <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
-        <span class="text-xs font-bold text-gray-500 whitespace-nowrap shrink-0"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
+        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
         <select id="dash-year-filter" onchange="renderCurrentDashboard()" class="text-xs font-semibold bg-transparent border-0 p-1 focus:ring-0 cursor-pointer">
           <option value="ALL">全部年份 (歷年總計)</option>
         </select>
@@ -651,7 +666,7 @@ tailwind.config = {
               <th class="p-3">使用人 (PI)</th>
               <th class="p-3">單位</th>
               <th class="p-3">影像條件</th>
-              <th class="p-3">光源波長</th>
+              <th class="p-3" id="dash-th-wavelength">光源波長</th>
               <th class="p-3 text-center">玻片數</th>
               <th class="p-3 text-center">時數 (收/非)</th>
               <th class="p-3">服務狀況</th>
@@ -791,14 +806,61 @@ function toggleWavelengthVisibility(prefix, imageType) {
   if (el) el.style.display = (imageType === '螢光') ? 'block' : 'none';
 }
 
+// 染色樣態選「其他」時，才顯示旁邊的自訂輸入框（平常收起來，版面更清爽）
+function toggleStainingOther(domPrefix, value) {
+  const otherInput = document.getElementById(`${domPrefix}-staining-other`);
+  if (!otherInput) return;
+  if (value === '其他') {
+    otherInput.classList.remove('hidden');
+    otherInput.focus();
+  } else {
+    otherInput.classList.add('hidden');
+  }
+}
+
+// 讀取「染色樣態」目前選取的值：選了固定選項就回傳該選項文字；
+// 選「其他」則回傳旁邊文字框輸入的內容（沒填就回傳「其他」）
+function getStainingTypeValue(domPrefix) {
+  const selected = document.querySelector(`input[name="${domPrefix}-stainingType"]:checked`);
+  if (!selected) return '';
+  if (selected.value === '其他') {
+    const otherInput = document.getElementById(`${domPrefix}-staining-other`);
+    const otherVal = (otherInput?.value || '').trim();
+    return otherVal || '其他';
+  }
+  return selected.value;
+}
+
+// 依既有紀錄的「染色樣態」值，還原勾選狀態：符合固定選項就選該選項；
+// 不符合（自訂文字）就選「其他」並把值填回文字框
+function populateStainingType(domPrefix, value) {
+  const known = ['H&E', 'DAB', 'PAS', 'MTS'];
+  document.querySelectorAll(`input[name="${domPrefix}-stainingType"]`).forEach(r => { r.checked = false; });
+  const otherInput = document.getElementById(`${domPrefix}-staining-other`);
+  if (otherInput) otherInput.value = '';
+  toggleStainingOther(domPrefix, ''); // 預設收起「其他」輸入框
+  if (!value) return;
+  if (known.includes(value)) {
+    const radio = document.querySelector(`input[name="${domPrefix}-stainingType"][value="${value}"]`);
+    if (radio) radio.checked = true;
+  } else {
+    const radio = document.querySelector(`input[name="${domPrefix}-stainingType"][value="其他"]`);
+    if (radio) radio.checked = true;
+    if (otherInput) otherInput.value = value;
+    toggleStainingOther(domPrefix, '其他');
+  }
+}
+
 // 編輯視窗專用：TissueFAXS 切換「螢光 / 可見光」時，同步顯示對應的參數區塊
-// （螢光→波長+通道參數；可見光→Condensor/燈源亮度/曝光時間），與新增表單行為一致
+// （螢光→波長+通道參數；可見光→染色樣態+Condensor/燈源亮度/曝光時間），與新增表單行為一致
 function toggleTfSections(prefix, imageType) {
   const isFluo = imageType === '螢光';
   const flBlock = document.getElementById(`${prefix}-fl-params-block`);
   const bfBlock = document.getElementById(`${prefix}-bf-params-block`);
+  const stainBlock = document.getElementById(`${prefix}-staining-container`);
   if (flBlock) flBlock.style.display = isFluo ? 'block' : 'none';
   if (bfBlock) bfBlock.classList.toggle('hidden', isFluo);
+  if (stainBlock) stainBlock.classList.toggle('hidden', isFluo);
 }
 
 // ==========================================
@@ -863,6 +925,18 @@ function tfImageBlockHTML(p) {
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.tf.mag)}</div>
       </div>
 
+      <div id="${p}-staining-container" class="hidden mb-3">
+        <label class="form-label text-xs">染色樣態</label>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="H&E" onchange="toggleStainingOther('${p}', this.value)"><span>H&E</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="DAB" onchange="toggleStainingOther('${p}', this.value)"><span>DAB</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="PAS" onchange="toggleStainingOther('${p}', this.value)"><span>PAS</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="MTS" onchange="toggleStainingOther('${p}', this.value)"><span>MTS</span></label>
+          <label class="checkbox-pill"><input type="radio" name="${p}-stainingType" value="其他" onchange="toggleStainingOther('${p}', this.value)"><span>其他</span></label>
+          <input type="text" id="${p}-staining-other" class="hidden staining-other-input" placeholder="請輸入">
+        </div>
+      </div>
+
       <div id="${p}-fl-params-block">
         <div id="${p}-wavelength-container" class="mb-3">
           <label class="form-label text-xs">光源波長 (可複選)</label>
@@ -886,7 +960,7 @@ function tfImageBlockHTML(p) {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label class="form-label text-xs">樣本片數</label><input type="number" id="${p}-slides" min="0"></div>
-        <div><label class="form-label text-xs">染色樣態備註</label><input type="text" id="${p}-staining"></div>
+        <div><label class="form-label text-xs">其他備註</label><input type="text" id="${p}-staining"></div>
       </div>
     </div>`;
 }
@@ -1000,6 +1074,7 @@ function populateEditForm(instCode, record) {
     toggleTfSections(p, imgType);
     checkPillValues(`${p}-mag`, record['物鏡倍率']);
     checkPillValues(`${p}-wavelength`, record['光源波長']);
+    populateStainingType(p, record['染色樣態']);
     fillChannelsFromRecord('tf', p, record);
     setVal(`${p}-bf-cond`, record['可見光_Condensor數值']);
     setVal(`${p}-bf-light`, record['可見光_燈源亮度']);
@@ -1101,7 +1176,8 @@ function toggleTfImageType(type) {
   const isFluo = type === '螢光';
   document.getElementById('tf-wavelength-container').style.display = isFluo ? 'block' : 'none';
   document.getElementById('tf-fl-params-block').style.display = isFluo ? 'block' : 'none';
-  document.getElementById('tf-bf-params-block').style.display = isFluo ? 'none' : 'grid';
+  document.getElementById('tf-bf-params-block').style.display = isFluo ? 'none' : 'block';
+  document.getElementById('tf-staining-container').style.display = isFluo ? 'none' : 'block';
 }
 
 // 動態增加獨立通道（欄位內容依 CHANNEL_CONFIG[instCode] 而定）
@@ -1286,6 +1362,7 @@ function buildPayloadData(instName, domPrefix) {
       imageType: document.querySelector(`input[name="${p}-imageType"]:checked`).value,
       mag: getCheckedValues(`${p}-mag`),
       wavelength: getCheckedValues(`${p}-wavelength`),
+      stainingType: getStainingTypeValue(p),
       staining: document.getElementById(`${p}-staining`).value,
       channels: collectChannelsArray('tf', p),
       bfCondensor: document.getElementById(`${p}-bf-cond`)?.value || '',
@@ -1387,7 +1464,8 @@ function buildRowDataArray(instName, record) {
       record.slides || 0, record.chargedHours || 0, record.nonChargedHours || 0,
       record.serviceCount || 1, record.status || "", record.notes || "",
       "", "",
-      record.bfCondensor || "", record.bfLight || "", record.bfExp || ""
+      record.bfCondensor || "", record.bfLight || "", record.bfExp || "",
+      record.stainingType || ""
     ];
   } else if (instName === 'AxioObserver') {
     return [
@@ -1477,6 +1555,19 @@ function updateDashboardHeader() {
   };
   document.getElementById('dash-inst-title').innerText = titles[currentInstrument].title;
   document.getElementById('dash-inst-subtitle').innerText = titles[currentInstrument].sub;
+
+  // 表格「光源波長」欄位標題：TissueFAXS 同時涵蓋螢光波長與可見光染色樣態，
+  // LSM880 用雷射波長，其餘用光源波長
+  const thWavelength = document.getElementById('dash-th-wavelength');
+  if (thWavelength) {
+    if (currentInstrument === 'TissueFAXS') {
+      thWavelength.textContent = '光源波長／染色樣態';
+    } else if (currentInstrument === 'LSM880') {
+      thWavelength.textContent = '雷射波長';
+    } else {
+      thWavelength.textContent = '光源波長';
+    }
+  }
 }
 
 // 記錄每台儀器的年份篩選是否已經設定過預設值，避免使用者手動選了「全部年份」之後，
@@ -1573,8 +1664,6 @@ function renderCurrentDashboard() {
 
   const sorted = [...filtered].reverse();
 
-  const wavelengthHeader = currentInstrument === 'LSM880' ? '雷射波長' : '光源波長';
-
   sorted.forEach(r => {
     const tr = document.createElement('tr');
     tr.className = "hover:bg-gray-50/80 transition detail-row";
@@ -1594,7 +1683,7 @@ function renderCurrentDashboard() {
       <td class="p-3 whitespace-nowrap"><span class="font-bold text-gray-700">${user}</span> <span class="text-gray-400 text-[11px]">(${pi})</span></td>
       <td class="p-3 text-gray-500 whitespace-nowrap">${unit}</td>
       <td class="p-3"><div class="flex flex-wrap max-w-[15rem]">${renderTypeBadges(r['影像類型'])}${renderMagBadges(r['物鏡倍率'])}</div></td>
-      <td class="p-3"><div class="flex flex-wrap max-w-[13rem]">${renderWavelengthBadges(r[wavelengthHeader])}</div></td>
+      <td class="p-3"><div class="flex flex-wrap items-center max-w-[13rem]">${renderWavelengthOrStaining(r)}</div></td>
       <td class="p-3 text-center font-bold text-gray-700">${slides}</td>
       <td class="p-3 text-center whitespace-nowrap"><span class="text-green-700 font-semibold">${charged}h</span> / <span class="text-gray-400">${nonCharged}h</span></td>
       <td class="p-3"><span class="px-2 py-0.5 rounded-md text-[11px] bg-gray-100 text-gray-600 border border-gray-200">${status}</span></td>
@@ -1658,6 +1747,19 @@ function renderWavelengthBadges(str) {
   ).join('');
 }
 
+// 歷史明細清單「光源波長」欄：TissueFAXS 的可見光紀錄沒有波長可顯示，
+// 改顯示「染色樣態」徽章（跟其他徽章同一種視覺語言，只是換一個低飽和的色調），
+// 避免可見光那幾列這一欄永遠空著。其餘情況維持顯示波長徽章。
+function renderWavelengthOrStaining(r) {
+  if (currentInstrument === 'TissueFAXS' && r['影像類型'] === '可見光') {
+    const staining = (r['染色樣態'] || '').toString().trim();
+    if (!staining) return '<span class="text-gray-300 text-xs">—</span>';
+    return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border bg-stone-100 text-stone-600 border-stone-300"><i class="fas fa-droplet"></i>${staining}</span>`;
+  }
+  const wavelengthHeader = currentInstrument === 'LSM880' ? '雷射波長' : '光源波長';
+  return renderWavelengthBadges(r[wavelengthHeader]);
+}
+
 // ==========================================
 // 明細檢視 / 編輯（點選展開，全部參數皆可查詢與修正）
 // ==========================================
@@ -1677,7 +1779,7 @@ function groupRecordFields(record) {
   const statusKeys = ['樣本片數', '樣本數', '拍照位點數', '對焦策略', '收費時數', '非收費時數', '服務人次', '服務狀況'];
   const noteKeys = ['研究內容'];
   const sysKeys = ['建立時間', '最後修改時間'];
-  const bfKeys = ['可見光_Condensor數值', '可見光_燈源亮度', '可見光_曝光時間'];
+  const bfKeys = ['染色樣態', '可見光_Condensor數值', '可見光_燈源亮度', '可見光_曝光時間'];
   const flOnlyKeys = ['光源波長']; // TissueFAXS 專屬：只有螢光模式才適用
 
   const isTF = currentInstrument === 'TissueFAXS';
