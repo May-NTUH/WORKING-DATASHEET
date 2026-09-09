@@ -1615,8 +1615,12 @@ function renderCurrentDashboard() {
     return;
   }
 
-  const sorted = [...filtered].reverse();
-
+const sorted = [...filtered].sort((a, b) => {
+    const dateA = new Date(a['服務日期'] || 0);
+    const dateB = new Date(b['服務日期'] || 0);
+    return dateB - dateA; // 新到舊（降冪）
+  });
+  
   sorted.forEach(r => {
     const tr = document.createElement('tr');
     tr.className = "hover:bg-gray-50/80 transition detail-row";
