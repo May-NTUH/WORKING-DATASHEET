@@ -670,7 +670,7 @@ tailwind.config = {
               <th class="p-3" id="dash-th-wavelength">光源波長</th>
               <th class="p-3 text-center">玻片數</th>
               <th class="p-3 text-center">時數 (收/非)</th>
-              <th class="p-3">服務狀況</th>
+              <th class="p-3 w-52">服務狀況</th>
               <th class="p-3 text-center">操作</th>
             </tr>
           </thead>
@@ -1639,7 +1639,7 @@ function renderCurrentDashboard() {
       <td class="p-3"><div class="flex flex-wrap items-center max-w-[13rem]">${renderWavelengthOrStaining(r)}</div></td>
       <td class="p-3 text-center font-bold text-gray-700">${slides}</td>
       <td class="p-3 text-center whitespace-nowrap"><span class="text-green-700 font-semibold">${charged}h</span> / <span class="text-gray-400">${nonCharged}h</span></td>
-      <td class="p-3"><span class="px-2 py-0.5 rounded-md text-[11px] bg-gray-100 text-gray-600 border border-gray-200">${status}</span></td>
+      <td class="p-3"><span class="inline-block max-w-[13rem] px-2 py-0.5 rounded-md text-[11px] bg-gray-100 text-gray-600 border border-gray-200 whitespace-normal break-words align-top" title="${status}">${status}</span></td>
       <td class="p-3 text-center whitespace-nowrap">
         <button class="icon-btn view" title="查看完整明細" onclick="openDetailModal(${r._rowId})"><i class="fas fa-eye"></i></button>
         <button class="icon-btn edit" title="編輯" onclick="openEditModal(${r._rowId})"><i class="fas fa-pen"></i></button>
