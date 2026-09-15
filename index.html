@@ -160,8 +160,8 @@ tailwind.config = {
       <i class="fas fa-microscope text-white"></i>
     </div>
     <div>
-      <h1 class="text-base font-bold tracking-wider leading-tight">影像實驗室</h1>
-      <span class="text-xs text-white/70">服務紀錄與統計系統</span>
+      <h1 class="text-base font-bold tracking-wider leading-tight">顯微影像核心</h1>
+      <span class="text-xs text-white/70">個人服務紀錄系統</span>
     </div>
   </div>
 
@@ -173,7 +173,7 @@ tailwind.config = {
         <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
       </button>
       <button class="nav-btn" id="nav-tf-dash" onclick="switchView('tf','dash')">
-        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+        <i class="fas fa-chart-pie w-4 text-center"></i> 歷史服務彙整
       </button>
     </div>
 
@@ -184,7 +184,7 @@ tailwind.config = {
         <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
       </button>
       <button class="nav-btn" id="nav-axio-dash" onclick="switchView('axio','dash')">
-        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+        <i class="fas fa-chart-pie w-4 text-center"></i> 歷史服務彙整
       </button>
     </div>
 
@@ -195,7 +195,7 @@ tailwind.config = {
         <i class="fas fa-pen-to-square w-4 text-center"></i> 新增服務紀錄
       </button>
       <button class="nav-btn" id="nav-lsm-dash" onclick="switchView('lsm','dash')">
-        <i class="fas fa-chart-pie w-4 text-center"></i> 後台彙整與統計
+        <i class="fas fa-chart-pie w-4 text-center"></i> 歷史服務彙整
       </button>
     </div>
   </div>
@@ -255,7 +255,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">物鏡倍率 (可複選)</label>
+          <label class="form-label">物鏡倍率</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="10x"><span>10x</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="20x"><span>20x</span></label>
@@ -264,7 +264,7 @@ tailwind.config = {
         </div>
 
         <div id="tf-staining-container" class="hidden mb-4">
-          <label class="form-label">染色樣態 (可複選)</label>
+          <label class="form-label">染色樣態</label>
           <div class="flex flex-wrap items-center gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf')"><span>H&E</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf')"><span>DAB</span></label>
@@ -276,7 +276,7 @@ tailwind.config = {
         </div>
 
         <div id="tf-wavelength-container" class="mb-4">
-          <label class="form-label">光源波長 (螢光專用，可複選)</label>
+          <label class="form-label">光源波長</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mDAPI"><span>mDAPI</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mFITC"><span>mFITC</span></label>
@@ -290,10 +290,10 @@ tailwind.config = {
 
         <!-- 獨立通道動態設定區（螢光專用） -->
         <div id="tf-fl-params-block" class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
-          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立螢光通道參數 (最多 4 組)</label>
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 個別螢光參數</label>
           <div id="tf-channels-list" class="space-y-2"></div>
           <button type="button" onclick="addFluoChannel('tf')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
-            <i class="fas fa-plus mr-1"></i> 新增螢光通道 (Channel)
+            <i class="fas fa-plus mr-1"></i> 新增螢光參數
           </button>
         </div>
 
@@ -323,7 +323,7 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="tf-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="tf-status" placeholder="例: 正常執行完畢"></div>
+          <div><label class="form-label">服務狀況</label><textarea id="tf-status" rows="2" placeholder="例: 正常執行完畢"></textarea></div>
           <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="tf-notes" rows="2" placeholder="描述本次服務對應的研究主題或用途..."></textarea></div>
         </div>
       </div>
@@ -331,10 +331,9 @@ tailwind.config = {
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl bg-morandi-tf hover:opacity-90 text-white font-bold transition shadow-md flex items-center gap-2">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
     </form>
   </div>
 
@@ -372,7 +371,7 @@ tailwind.config = {
         </h3>
 
         <div class="mb-4">
-          <label class="form-label">影像類型 (可複選)</label>
+          <label class="form-label">影像類型</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="一般拍照"><span>一般拍照</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="曠時攝影"><span>曠時攝影</span></label>
@@ -388,7 +387,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">物鏡倍率 (可複選)</label>
+          <label class="form-label">物鏡倍率</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="10x"><span>10x</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="20x"><span>20x</span></label>
@@ -400,7 +399,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">光源波長 (可複選)</label>
+          <label class="form-label">光源波長</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH1"><span>PH1</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH2"><span>PH2</span></label>
@@ -424,10 +423,10 @@ tailwind.config = {
         </div>
 
         <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
-          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立波長通道參數 (最多 5 組，已移除 Threshold 欄位)</label>
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 個別光源參數</label>
           <div id="axio-channels-list" class="space-y-2"></div>
           <button type="button" onclick="addFluoChannel('axio')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
-            <i class="fas fa-plus mr-1"></i> 新增波長通道 (Channel)
+            <i class="fas fa-plus mr-1"></i> 新增光源參數
           </button>
         </div>
 
@@ -444,7 +443,7 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="axio-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="axio-status" placeholder="例: 正常運作"></div>
+          <div><label class="form-label">服務狀況</label><textarea id="axio-status" rows="2" placeholder="例: 正常運作"></textarea></div>
           <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="axio-notes" rows="2" placeholder="描述本次服務對應的研究主題或用途..."></textarea></div>
         </div>
       </div>
@@ -452,10 +451,9 @@ tailwind.config = {
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#7A8684">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
     </form>
   </div>
 
@@ -493,7 +491,7 @@ tailwind.config = {
         </h3>
 
         <div class="mb-4">
-          <label class="form-label">影像類型 (可複選)</label>
+          <label class="form-label">影像類型</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="一般拍照"><span>一般拍照</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="lsm-shootType" value="曠時攝影"><span>曠時攝影</span></label>
@@ -509,7 +507,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">物鏡倍率 (可複選)</label>
+          <label class="form-label">物鏡倍率</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="5X"><span>5X</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="lsm-mag" value="10X"><span>10X</span></label>
@@ -521,7 +519,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">雷射波長 (可複選)</label>
+          <label class="form-label">雷射波長</label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="DIC"><span>DIC</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="lsm-wavelength" value="DAPI"><span>DAPI</span></label>
@@ -561,7 +559,7 @@ tailwind.config = {
         </div>
 
         <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
-          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立共軛焦通道參數 (最多 4 組，Threshold 已改為 Pinhole)</label>
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立共軛焦通道參數</label>
           <div id="lsm-channels-list" class="space-y-2"></div>
           <button type="button" onclick="addFluoChannel('lsm')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
             <i class="fas fa-plus mr-1"></i> 新增通道 (Channel)
@@ -579,7 +577,7 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="lsm-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="lsm-status" placeholder="例: 雷射正常"></div>
+          <div><label class="form-label">服務狀況</label><textarea id="lsm-status" rows="2" placeholder="例: 雷射正常"></textarea></div>
           <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="lsm-notes" rows="2" placeholder="描述本次服務對應的研究主題或用途..."></textarea></div>
         </div>
       </div>
@@ -587,10 +585,9 @@ tailwind.config = {
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#62706E">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
     </form>
   </div>
 
@@ -610,7 +607,7 @@ tailwind.config = {
       </div>
 
       <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
-        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
+        <span class="text-xs font-bold text-gray-500 whitespace-nowrap"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
         <select id="dash-year-filter" onchange="renderCurrentDashboard()" class="text-xs font-semibold bg-transparent border-0 p-1 focus:ring-0 cursor-pointer">
           <option value="ALL">全部年份 (歷年總計)</option>
         </select>
@@ -900,7 +897,7 @@ function hoursStatusBlockHTML(p) {
         <div><label class="form-label text-xs">服務人次</label><input type="number" id="${p}-count" min="1"></div>
       </div>
       <div class="space-y-3">
-        <div><label class="form-label text-xs">服務狀況</label><input type="text" id="${p}-status"></div>
+        <div><label class="form-label text-xs">服務狀況</label><textarea id="${p}-status" rows="2"></textarea></div>
         <div><label class="form-label text-xs"><i class="fas fa-flask mr-1 text-gray-400"></i>研究內容</label><textarea rows="2" id="${p}-notes"></textarea></div>
       </div>
     </div>`;
@@ -929,12 +926,12 @@ function tfImageBlockHTML(p) {
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <label class="form-label text-xs">物鏡倍率</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.tf.mag)}</div>
       </div>
 
       <div id="${p}-staining-container" class="hidden mb-3">
-        <label class="form-label text-xs">染色樣態 (可複選)</label>
+        <label class="form-label text-xs">染色樣態</label>
         <div class="flex flex-wrap items-center gap-2">
           <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="H&E" onchange="toggleStainingOther('${p}')"><span>H&E</span></label>
           <label class="checkbox-pill"><input type="checkbox" name="${p}-stainingType" value="DAB" onchange="toggleStainingOther('${p}')"><span>DAB</span></label>
@@ -947,11 +944,11 @@ function tfImageBlockHTML(p) {
 
       <div id="${p}-fl-params-block">
         <div id="${p}-wavelength-container" class="mb-3">
-          <label class="form-label text-xs">光源波長 (可複選)</label>
+          <label class="form-label text-xs">光源波長</label>
           <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.tf.wavelength)}</div>
         </div>
         <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
-          <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立螢光通道參數</label>
+          <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">個別螢光參數</label>
           <div id="${p}-channels-list" class="space-y-2"></div>
           <button type="button" onclick="addFluoChannel('tf','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
         </div>
@@ -978,7 +975,7 @@ function axioImageBlockHTML(p) {
     <div class="mb-5">
       <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-vial"></i>樣本與影像資訊</div>
       <div class="mb-3">
-        <label class="form-label text-xs">影像類型 (可複選)</label>
+        <label class="form-label text-xs">影像類型</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-shootType`, OPTIONS.axio.shootType)}</div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 p-2 bg-gray-50 rounded-lg text-xs">
           <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="${p}-timelapse"></div>
@@ -987,11 +984,11 @@ function axioImageBlockHTML(p) {
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <label class="form-label text-xs">物鏡倍率</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.axio.mag)}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-xs">光源波長 (可複選)</label>
+        <label class="form-label text-xs">光源波長</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.axio.wavelength)}</div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -1003,7 +1000,7 @@ function axioImageBlockHTML(p) {
         <div><label class="form-label text-xs">拍照位點數</label><input type="number" id="${p}-positions" min="0"></div>
       </div>
       <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
-        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">獨立波長通道參數</label>
+        <label class="text-[11px] font-bold text-gray-600 uppercase tracking-wide block mb-2">個別光源參數</label>
         <div id="${p}-channels-list" class="space-y-2"></div>
         <button type="button" onclick="addFluoChannel('axio','${p}')" class="mt-2 text-xs px-3 py-1 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium"><i class="fas fa-plus mr-1"></i>新增通道</button>
       </div>
@@ -1016,7 +1013,7 @@ function lsmImageBlockHTML(p) {
     <div class="mb-5">
       <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i class="fas fa-vial"></i>樣本與影像資訊</div>
       <div class="mb-3">
-        <label class="form-label text-xs">影像類型 (可複選)</label>
+        <label class="form-label text-xs">影像類型</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-shootType`, OPTIONS.lsm.shootType)}</div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2 p-2 bg-gray-50 rounded-lg text-xs">
           <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="${p}-timelapse"></div>
@@ -1025,11 +1022,11 @@ function lsmImageBlockHTML(p) {
         </div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-xs">物鏡倍率 (可複選)</label>
+        <label class="form-label text-xs">物鏡倍率</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-mag`, OPTIONS.lsm.mag)}</div>
       </div>
       <div class="mb-3">
-        <label class="form-label text-xs">雷射波長 (可複選)</label>
+        <label class="form-label text-xs">雷射波長</label>
         <div class="flex flex-wrap gap-2">${pillGroupHTML(`${p}-wavelength`, OPTIONS.lsm.wavelength)}</div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
