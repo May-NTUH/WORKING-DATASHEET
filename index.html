@@ -255,7 +255,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">物鏡倍率 (可複選)</label>
+          <label class="form-label">物鏡倍率 </label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="10x"><span>10x</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-mag" value="20x"><span>20x</span></label>
@@ -264,7 +264,7 @@ tailwind.config = {
         </div>
 
         <div id="tf-staining-container" class="hidden mb-4">
-          <label class="form-label">染色樣態 (可複選)</label>
+          <label class="form-label">染色樣態 </label>
           <div class="flex flex-wrap items-center gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="H&E" onchange="toggleStainingOther('tf')"><span>H&E</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="DAB" onchange="toggleStainingOther('tf')"><span>DAB</span></label>
@@ -276,7 +276,7 @@ tailwind.config = {
         </div>
 
         <div id="tf-wavelength-container" class="mb-4">
-          <label class="form-label">光源波長 (螢光專用，可複選)</label>
+          <label class="form-label">光源波長 </label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mDAPI"><span>mDAPI</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-wavelength" value="mFITC"><span>mFITC</span></label>
@@ -315,27 +315,26 @@ tailwind.config = {
 
       <div class="form-section" style="border-left-color: #8F8681;">
         <h3 class="text-sm font-bold text-gray-700 border-b pb-3 mb-4 flex items-center gap-2">
-          <i class="fas fa-clock text-morandi-tf"></i> 服務時數與狀態
+          <i class="fas fa-clock text-morandi-tf"></i> 服務時數與紀錄
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div><label class="form-label">收費時數 (小時)</label><input type="number" step="0.5" id="tf-charged" value="0" min="0"></div>
-          <div><label class="form-label">非收費時數 (小時)</label><input type="number" step="0.5" id="tf-nonCharged" value="0" min="0"></div>
+          <div><label class="form-label">收費時數 (時)</label><input type="number" step="0.5" id="tf-charged" value="0" min="0"></div>
+          <div><label class="form-label">非收費時數 (時)</label><input type="number" step="0.5" id="tf-nonCharged" value="0" min="0"></div>
           <div><label class="form-label">服務人次</label><input type="number" id="tf-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
           <div><label class="form-label">服務狀況</label><input type="text" id="tf-status" placeholder="例: 正常執行完畢"></div>
-          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="tf-notes" rows="2" placeholder="描述本次服務對應的研究主題或用途..."></textarea></div>
+          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="tf-notes" rows="2" placeholder="研究主題或實驗方向"></textarea></div>
         </div>
       </div>
 
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl bg-morandi-tf hover:opacity-90 text-white font-bold transition shadow-md flex items-center gap-2">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
-    </form>
+          </form>
   </div>
 
   <!-- ================================================================= -->
