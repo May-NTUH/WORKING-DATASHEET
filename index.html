@@ -324,12 +324,12 @@ tailwind.config = {
         </div>
         <div class="space-y-4">
           <div><label class="form-label">服務狀況</label><input type="text" id="tf-status" placeholder="例: 正常執行完畢"></div>
-          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><textarea id="tf-notes" rows="2" placeholder="研究主題或實驗方向"></textarea></div>
+          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="tf-status" placeholder="研究主題或實驗方向"></div>
         </div>
       </div>
 
       <div class="flex justify-end gap-3 mb-10">
-        <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
+        <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空</button>
         <button type="submit" class="px-6 py-2 rounded-xl bg-morandi-tf hover:opacity-90 text-white font-bold transition shadow-md flex items-center gap-2">
           <i class="fas fa-paper-plane"></i> 儲存
         </button>
@@ -359,9 +359,9 @@ tailwind.config = {
         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div><label class="form-label">服務日期 <span class="text-red-500">*</span></label><input type="date" id="axio-date" required></div>
           <div><label class="form-label">單位 <span class="text-red-500">*</span></label><input type="text" id="axio-unit" placeholder="例: 醫學研究部" required></div>
-          <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="axio-pi" placeholder="例: 李教授" required></div>
-          <div><label class="form-label">服務使用人 <span class="text-red-500">*</span></label><input type="text" id="axio-user" placeholder="例: 林博士" required></div>
-          <div class="md:col-span-2"><label class="form-label">資料夾名稱</label><input type="text" id="axio-folder" placeholder="例: 20260301_LeeLab_LiveCell"></div>
+          <div><label class="form-label">計畫主持人 (PI) <span class="text-red-500">*</span></label><input type="text" id="axio-pi" placeholder="例: 林頌然" required></div>
+          <div><label class="form-label">服務使用人 <span class="text-red-500">*</span></label><input type="text" id="axio-user" placeholder="例: 韓小湄" required></div>
+          <div class="md:col-span-2"><label class="form-label">資料夾名稱</label><input type="text" id="axio-folder" placeholder="例: SJL"></div>
         </div>
       </div>
 
@@ -371,7 +371,7 @@ tailwind.config = {
         </h3>
 
         <div class="mb-4">
-          <label class="form-label">影像類型 (可複選)</label>
+          <label class="form-label">影像類型 </label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="一般拍照"><span>一般拍照</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-shootType" value="曠時攝影"><span>曠時攝影</span></label>
@@ -381,13 +381,13 @@ tailwind.config = {
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded-lg text-xs">
             <div><label class="form-label text-[11px]">曠時攝影 (總時間/區間)</label><input type="text" id="axio-timelapse" placeholder="例: 12hr / 每15分"></div>
-            <div><label class="form-label text-[11px]">Z軸 (層數/步距)</label><input type="text" id="axio-zstack" placeholder="例: 20層 / 1μm"></div>
+            <div><label class="form-label text-[11px]">Z軸 (層數/厚度)</label><input type="text" id="axio-zstack" placeholder="例: 20層 / 1μm"></div>
             <div><label class="form-label text-[11px]">環境控制 (溫度/加濕)</label><input type="text" id="axio-env" placeholder="例: 37°C / 有加濕"></div>
           </div>
         </div>
 
         <div class="mb-4">
-          <label class="form-label">物鏡倍率 (可複選)</label>
+          <label class="form-label">物鏡倍率 </label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="10x"><span>10x</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-mag" value="20x"><span>20x</span></label>
@@ -399,7 +399,7 @@ tailwind.config = {
         </div>
 
         <div class="mb-4">
-          <label class="form-label">光源波長 (可複選)</label>
+          <label class="form-label">光源波長 </label>
           <div class="flex flex-wrap gap-2">
             <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH1"><span>PH1</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="axio-wavelength" value="PH2"><span>PH2</span></label>
@@ -423,10 +423,10 @@ tailwind.config = {
         </div>
 
         <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 mb-4">
-          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 獨立波長通道參數 (最多 5 組，已移除 Threshold 欄位)</label>
+          <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-2"><i class="fas fa-layer-group mr-1"></i> 個別光源波長參數 </label>
           <div id="axio-channels-list" class="space-y-2"></div>
           <button type="button" onclick="addFluoChannel('axio')" class="mt-3 text-xs px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition font-medium">
-            <i class="fas fa-plus mr-1"></i> 新增波長通道 (Channel)
+            <i class="fas fa-plus mr-1"></i> 新增參數
           </button>
         </div>
 
@@ -451,10 +451,9 @@ tailwind.config = {
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#7A8684">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
     </form>
   </div>
 
@@ -586,10 +585,9 @@ tailwind.config = {
       <div class="flex justify-end gap-3 mb-10">
         <button type="reset" class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium hover:bg-gray-300 transition">清空重填</button>
         <button type="submit" class="px-6 py-2 rounded-xl text-white font-bold transition shadow-md flex items-center gap-2" style="background:#62706E">
-          <i class="fas fa-paper-plane"></i> 儲存至 Google Sheet
+          <i class="fas fa-paper-plane"></i> 儲存
         </button>
       </div>
-      <p class="text-[11px] text-gray-400 -mt-8 mb-10 text-right"><i class="fas fa-circle-info mr-1"></i> 請確認資料無誤後手動按下「儲存」，按 Enter 鍵不會送出表單。</p>
     </form>
   </div>
 
@@ -609,7 +607,7 @@ tailwind.config = {
       </div>
 
       <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm">
-        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>統計年份:</span>
+        <span class="text-xs font-bold text-gray-500"><i class="fas fa-calendar-alt mr-1"></i>年份:</span>
         <select id="dash-year-filter" onchange="renderCurrentDashboard()" class="text-xs font-semibold bg-transparent border-0 p-1 focus:ring-0 cursor-pointer">
           <option value="ALL">全部年份 (歷年總計)</option>
         </select>
@@ -634,7 +632,7 @@ tailwind.config = {
         <i class="fas fa-graduation-cap stat-icon text-gray-500"></i>
         <div class="text-xs font-bold text-gray-400 mb-1">總非收費時數</div>
         <div id="stat-noncharged-hours" class="text-2xl font-black text-gray-600">0 <span class="text-xs font-normal">hr</span></div>
-        <div class="text-[10px] text-gray-400 mt-1">教育訓練 / 維護測試</div>
+        <div class="text-[10px] text-gray-400 mt-1">檢查補拍 / 維護測試</div>
       </div>
       <div class="stat-card bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm">
         <i class="fas fa-layer-group stat-icon text-morandi-tf"></i>
@@ -649,12 +647,12 @@ tailwind.config = {
       <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between gap-3 bg-gray-50/50">
         <div class="flex items-center gap-2">
           <i class="fas fa-list text-gray-500 text-sm"></i>
-          <span class="text-sm font-bold text-gray-700">歷史服務明細清單</span>
+          <span class="text-sm font-bold text-gray-700">歷史服務明細</span>
           <span id="dash-record-count" class="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0 筆</span>
         </div>
         <div class="relative w-full md:w-72">
           <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
-          <input type="text" id="dash-search-input" oninput="handleSearchInput()" placeholder="搜尋使用人 / 主持人 / 單位...（自動跨年度搜尋）" class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
+          <input type="text" id="dash-search-input" oninput="handleSearchInput()" placeholder="搜尋" class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
         </div>
       </div>
 
@@ -697,7 +695,7 @@ tailwind.config = {
     <div class="modal-footer">
       <button onclick="closeModal('detail-modal')" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition">關閉</button>
       <button id="detail-to-edit-btn" class="px-4 py-2 rounded-lg bg-morandi-sidebar text-white text-sm font-bold hover:opacity-90 transition flex items-center gap-2">
-        <i class="fas fa-pen"></i> 編輯此筆紀錄
+        <i class="fas fa-pen"></i> 編輯
       </button>
     </div>
   </div>
@@ -717,7 +715,7 @@ tailwind.config = {
     <div class="modal-footer">
       <button onclick="closeModal('edit-modal')" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-300 transition">取消</button>
       <button id="edit-save-btn" onclick="saveEdit()" class="px-4 py-2 rounded-lg bg-morandi-sidebar text-white text-sm font-bold hover:opacity-90 transition flex items-center gap-2">
-        <i class="fas fa-check"></i> 儲存並更新 Google Sheet
+        <i class="fas fa-check"></i> 儲存更新
       </button>
     </div>
   </div>
@@ -732,9 +730,9 @@ let activeDetailRecord = null;
 
 // ==========================================
 // 各儀器獨立通道欄位設定
-// tf   : 波長/亮度/曝光/Threshold（4組，維持不變）
-// axio : 波長/亮度/曝光（無 Threshold，最多 5 組）
-// lsm  : 雷射波長/雷射強度/Gain/Pinhole（Threshold 改為 Pinhole，4組）
+// tf   : 波長/亮度/曝光/Threshold
+// axio : 波長/亮度/曝光
+// lsm  : 雷射波長/雷射強度/Gain/Pinhole
 // ==========================================
 const CHANNEL_CONFIG = {
   tf:   { max: 4, fields: ['type','light','exp','thresh'],
