@@ -271,7 +271,7 @@ tailwind.config = {
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="PAS" onchange="toggleStainingOther('tf')"><span>PAS</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="MTS" onchange="toggleStainingOther('tf')"><span>MTS</span></label>
             <label class="checkbox-pill"><input type="checkbox" name="tf-stainingType" value="其他" onchange="toggleStainingOther('tf')"><span>其他</span></label>
-            <input type="text" id="tf-staining-other" class="hidden staining-other-input" ="請輸入">
+            <input type="text" id="tf-staining-other" class="hidden staining-other-input" placeholder="請輸入">
           </div>
         </div>
 
@@ -323,8 +323,8 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="tf-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="tf-staining" placeholder="例: 正常執行完畢"></div>
-          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="tf-staining" placeholder="研究主題或實驗方向"></div>
+          <div><label class="form-label">服務狀況</label><input type="text" id="tf-status" placeholder="例: 正常執行完畢"></div>
+          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="tf-notes" placeholder="研究主題或實驗方向"></div>
         </div>
       </div>
 
@@ -443,8 +443,8 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="axio-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="tf-staining" placeholder="例: 正常運作"></div>
-          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="tf-staining" placeholder="研究主題或實驗方向"></div>
+          <div><label class="form-label">服務狀況</label><input type="text" id="axio-status" placeholder="例: 正常運作"></div>
+          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="axio-notes" placeholder="研究主題或實驗方向"></div>
         </div>
       </div>
 
@@ -577,8 +577,8 @@ tailwind.config = {
           <div><label class="form-label">服務人次</label><input type="number" id="lsm-count" value="1" min="1"></div>
         </div>
         <div class="space-y-4">
-          <div><label class="form-label">服務狀況</label><input type="text" id="tf-staining" placeholder="例: 雷射正常"></div>
-          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="tf-staining" placeholder="研究主題或實驗方向"></div>
+          <div><label class="form-label">服務狀況</label><input type="text" id="lsm-status" placeholder="例: 雷射正常"></div>
+          <div><label class="form-label"><i class="fas fa-flask mr-1 text-gray-400"></i> 研究內容</label><input type="text" id="lsm-notes" placeholder="研究主題或實驗方向"></div>
         </div>
       </div>
 
@@ -652,7 +652,7 @@ tailwind.config = {
         </div>
         <div class="relative w-full md:w-72">
           <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
-          <input type="text" id="dash-search-input" oninput="handleSearchInput()" placeholder=" " class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
+          <input type="text" id="dash-search-input" oninput="handleSearchInput()" placeholder="搜尋..." class="pl-8 text-xs py-2 bg-white border border-gray-200 rounded-lg">
         </div>
       </div>
 
@@ -1466,15 +1466,23 @@ async function handleFormSubmit(event, instName) {
   submitBtn.disabled = true;
   submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 資料傳輸中...`;
 
-  const payload = { instrument: instName, action: 'insert', data: buildPayloadData(instName) };
-
+  // 重要：組資料 (buildPayloadData) 和送出 (fetch) 全部包在同一個 try 裡面。
+  // 這樣不管是「欄位讀取失敗」還是「網路/後端錯誤」，都保證會走到 finally 把按鈕解鎖，
+  // 不會再發生按鈕卡在「資料傳輸中...」動彈不得、卻沒有任何錯誤提示的情況。
   try {
-    await fetch(GAS_API_URL, {
+    const payload = { instrument: instName, action: 'insert', data: buildPayloadData(instName) };
+
+    // 不使用 mode:"no-cors"，改用 Content-Type: text/plain 避免觸發預檢請求(preflight)，
+    // 這樣才讀得到 Google Apps Script 真正回傳的執行結果，而不是永遠假裝成功。
+    const res = await fetch(GAS_API_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
+    const result = await res.json();
+    if (result.status !== 'success') {
+      throw new Error(result.message || '後端回傳未知錯誤');
+    }
 
     showToast('服務紀錄已成功儲存至 Google 試算表！', 'success');
     event.target.reset();
@@ -1485,7 +1493,7 @@ async function handleFormSubmit(event, instName) {
     // （後端也已經在寫入成功時清除了該儀器的快取，所以下次讀取一定拿得到這筆新資料）
     instrumentLoaded[instName] = false;
   } catch (err) {
-    showToast('儲存失敗，請檢查連線！', 'error');
+    showToast('儲存失敗：' + err.message, 'error');
     console.error(err);
   } finally {
     submitBtn.disabled = false;
@@ -1864,37 +1872,45 @@ async function saveEdit() {
   const instCode = INST_SHORT[currentInstrument];
   const domPrefix = `edit-${instCode}`;
 
-  // 用與「新增表單」完全相同的邏輯讀取編輯視窗內容，組成結構化資料。
-  // 後端會依欄位標題文字比對寫入正確的儲存格，不用管欄位在 Sheet 上實際排第幾欄，
-  // 也不會動到表單沒有管理的其他欄位（例如手動加在 Sheet 上的備用欄位）。
-  const structured = buildPayloadData(currentInstrument, domPrefix);
-
   const saveBtn = document.getElementById('edit-save-btn');
   const originText = saveBtn.innerHTML;
   saveBtn.disabled = true;
   saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 更新中...`;
 
-  const payload = {
-    instrument: currentInstrument,
-    action: 'update',
-    rowId: rowId,
-    data: structured
-  };
-
+  // 重要：組資料跟送出全部包在同一個 try 裡面，理由同 handleFormSubmit——
+  // 避免欄位讀取失敗時按鈕永遠卡在「更新中...」卻沒有任何錯誤提示。
   try {
-    await fetch(GAS_API_URL, {
+    // 用與「新增表單」完全相同的邏輯讀取編輯視窗內容，組成結構化資料。
+    // 後端會依欄位標題文字比對寫入正確的儲存格，不用管欄位在 Sheet 上實際排第幾欄，
+    // 也不會動到表單沒有管理的其他欄位（例如手動加在 Sheet 上的備用欄位）。
+    const structured = buildPayloadData(currentInstrument, domPrefix);
+
+    const payload = {
+      instrument: currentInstrument,
+      action: 'update',
+      rowId: rowId,
+      data: structured
+    };
+
+    // 不使用 mode:"no-cors"，改用 Content-Type: text/plain 避免觸發預檢請求(preflight)，
+    // 這樣才讀得到 Google Apps Script 真正回傳的執行結果，而不是永遠假裝成功。
+    const res = await fetch(GAS_API_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
+    const result = await res.json();
+    if (result.status !== 'success') {
+      throw new Error(result.message || '後端回傳未知錯誤');
+    }
+
     showToast('紀錄已更新，正在重新整理資料...', 'success');
     closeModal('edit-modal');
     // 編輯的一定是「目前正在檢視」的儀器，直接強制重新讀取該儀器（繞過快取拿最新資料）
     await loadInstrumentData(currentInstrument, true);
   } catch (err) {
     console.error(err);
-    showToast('更新失敗，請檢查連線！', 'error');
+    showToast('更新失敗：' + err.message, 'error');
   } finally {
     saveBtn.disabled = false;
     saveBtn.innerHTML = originText;
@@ -1903,4 +1919,5 @@ async function saveEdit() {
 </script>
 </body>
 </html>
+
 
